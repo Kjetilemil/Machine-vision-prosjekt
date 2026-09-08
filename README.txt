@@ -18,11 +18,12 @@ Plan for oppsett:
 mv-editor/
 ├── pyproject.toml
 ├── main.py                        # 2 linjer: from mv_editor.app import main; main()
-├── README.md                      # oppsett, kjøring, modellnedlasting, lisensnote
+├── README.md                      # oppsett, kjøring, modellnedlasting
 ├── .gitignore                     # .venv/ *.egg-info/ models/ exports/ __pycache__/
 │
 ├── scripts/
-│   ├── download_models.py         # henter Levi-Hassner-filene, verifiserer checksum
+│   ├── download_models.py         # Levi-Hassner (Caffe) + checksum.
+│   │                              #   InsightFace henter sine egne til ~/.insightface
 │   └── eval_age.py                # treffsikkerhet mot kjente aldre → tabell til rapport
 │
 ├── src/
@@ -37,6 +38,7 @@ mv-editor/
 │       │   ├── history.py         # undo/redo: stack av hele arrays, maks 20
 │       │   ├── fileio.py          # new, open, save, save as, properties
 │       │   ├── selection.py       # rect / lasso / polygon → binær maske
+│       │   ├── masking.py         # blend(base, edited, mask) — float32 0.0–1.0, én kanal
 │       │   ├── transforms.py      # crop, resize, rotate 90 L/R, flip v/h
 │       │   ├── filters.py         # gaussian, sobel, binary, histogram-terskling
 │       │   ├── retouch.py         # skin smoothing, blur, lysstyrke/kontrast, warp
@@ -47,9 +49,9 @@ mv-editor/
 │       ├── vision/                # modell-avhengig — heller ingen Qt
 │       │   ├── __init__.py
 │       │   ├── face.py            # deteksjon + landmarks → FaceResult
-│       │   ├── age.py             # face crop → float alder + konfidens
+│       │   ├── age.py             # AgeEstimator-protokoll: InsightFaceAge (primær,
+│       │   │                      #   regresjon) + LeviHassnerAge (softmax-forventning)
 │       │   ├── mask.py            # landmarks → ansiktsmaske (hud, øyne, munn)
-│       │   ├── detector.py        # YOLO: frame → [(label, conf, box)]
 │       │   ├── effects.py         # overlays, bakgrunnsbytte (valgfri)
 │       │   └── overlay.py         # tegner bokser/labels på KOPI av framen
 │       │
@@ -81,13 +83,14 @@ mv-editor/
 ├── assets/                        # penselteksturer, ikoner, overlay-PNG-er
 ├── data/
 │   └── faces/                     # testbilder med kjent alder, for eval_age.py
-├── models/                        # .onnx / .caffemodel — i .gitignore
+├── models/                        # .caffemodel / .prototxt — i .gitignore
 ├── exports/                       # CSV fra loopen — i .gitignore
 │
 ├── tests/
 │   ├── test_filters.py
 │   ├── test_transforms.py
 │   ├── test_selection.py
+│   ├── test_masking.py            # helt 0 → base, helt 1 → edited, dtype-sjekk
 │   ├── test_retouch.py            # ren ndarray-test, ingen modeller nødvendig
 │   └── test_age.py                # kun: krasjer ikke, 0–100, deterministisk
 │
