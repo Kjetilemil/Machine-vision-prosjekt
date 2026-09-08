@@ -16,69 +16,72 @@ AI Detection til å gjette hvor ung personen er. Dette kan skape en gøy loop hv
 
 Plan for oppsett:
 mv-editor/
-├── main.py                        # kun: sys.path-oppsett, QApplication, MainWindow
-├── requirements.txt
-├── README.md                      # oppsett, kjøring, modellnedlasting
-├── config.py                      # stier, modellnavn, standardverdier
-├── .gitignore                     # models/, __pycache__/, exports/
+├── pyproject.toml
+├── main.py                        # 2 linjer: from mv_editor.app import main; main()
+├── README.md                      # oppsett, kjøring, modellnedlasting, lisensnote
+├── .gitignore                     # .venv/ *.egg-info/ models/ exports/ __pycache__/
 │
 ├── scripts/
-│   ├── download_models.py         # henter modellfiler, verifiserer checksum
-│   └── eval_age.py                # eksperiment: treffsikkerhet mot kjente aldre → tabell
+│   ├── download_models.py         # henter Levi-Hassner-filene, verifiserer checksum
+│   └── eval_age.py                # treffsikkerhet mot kjente aldre → tabell til rapport
 │
 ├── src/
-│   ├── __init__.py
-│   │
-│   ├── core/                      # ren bildelogikk — INGEN Qt, INGEN modeller
-│   │   ├── __init__.py
-│   │   ├── document.py            # eier self.image (BGR ndarray), filsti, dirty-flag
-│   │   ├── history.py             # undo/redo: stack av hele arrays, maks 20
-│   │   ├── fileio.py              # new, open, save, save as, properties
-│   │   ├── selection.py           # rect / lasso / polygon → binær maske
-│   │   ├── transforms.py          # crop, resize, rotate 90 L/R, flip v/h
-│   │   ├── filters.py             # gaussian, sobel, binary, histogram-terskling
-│   │   ├── retouch.py             # skin smoothing, blur, lysstyrke/kontrast, warp
-│   │   ├── drawing.py             # pensel, viskelær, teksturer, tekst
-│   │   ├── shapes.py              # figurer, outline/fill
-│   │   └── clipboard.py           # copy, cut, paste (jobber mot maske)
-│   │
-│   ├── vision/                    # modell-avhengig — heller ingen Qt
-│   │   ├── __init__.py
-│   │   ├── face.py                # deteksjon + landmarks → FaceResult
-│   │   ├── age.py                 # face crop → float alder + konfidens
-│   │   ├── mask.py                # landmarks → ansiktsmaske (hud, øyne, munn)
-│   │   ├── detector.py            # YOLO: frame → [(label, conf, box)]
-│   │   ├── effects.py             # overlays, bakgrunnsbytte (valgfri)
-│   │   └── overlay.py             # tegner bokser/labels på KOPI av framen
-│   │
-│   ├── experiment/
-│   │   ├── __init__.py
-│   │   ├── params.py              # RetouchParams: dataclass med alle slider-verdier
-│   │   └── loop.py                # kjør params → mål alder → logg Trial → export_trials()
-│   │
-│   ├── camera/
-│   │   ├── __init__.py
-│   │   └── stream.py              # QThread, webcam → frames som signal, frame-dropping
-│   │
-│   └── ui/
+│   └── mv_editor/
 │       ├── __init__.py
-│       ├── main_window.py
-│       ├── menus.py               # de seks menyene fra kravlista
-│       ├── canvas.py              # tegning, museinteraksjon
-│       ├── viewport.py            # zoom/pan-state + koordinat-mapping skjerm↔bilde
-│       ├── toolbar.py
-│       ├── camera_window.py       # live-vindu, "Capture" → inn i editoren
-│       └── panels/
+│       ├── app.py                 # main(): QApplication + MainWindow
+│       ├── config.py              # parents[2] for rotmappe, modellnavn, standardverdier
+│       │
+│       ├── core/                  # ren bildelogikk — INGEN Qt, INGEN modeller
+│       │   ├── __init__.py
+│       │   ├── document.py        # eier self.image (BGR ndarray), filsti, dirty-flag
+│       │   ├── history.py         # undo/redo: stack av hele arrays, maks 20
+│       │   ├── fileio.py          # new, open, save, save as, properties
+│       │   ├── selection.py       # rect / lasso / polygon → binær maske
+│       │   ├── transforms.py      # crop, resize, rotate 90 L/R, flip v/h
+│       │   ├── filters.py         # gaussian, sobel, binary, histogram-terskling
+│       │   ├── retouch.py         # skin smoothing, blur, lysstyrke/kontrast, warp
+│       │   ├── drawing.py         # pensel, viskelær, teksturer, tekst
+│       │   ├── shapes.py          # figurer, outline/fill
+│       │   └── clipboard.py       # copy, cut, paste (jobber mot maske)
+│       │
+│       ├── vision/                # modell-avhengig — heller ingen Qt
+│       │   ├── __init__.py
+│       │   ├── face.py            # deteksjon + landmarks → FaceResult
+│       │   ├── age.py             # face crop → float alder + konfidens
+│       │   ├── mask.py            # landmarks → ansiktsmaske (hud, øyne, munn)
+│       │   ├── detector.py        # YOLO: frame → [(label, conf, box)]
+│       │   ├── effects.py         # overlays, bakgrunnsbytte (valgfri)
+│       │   └── overlay.py         # tegner bokser/labels på KOPI av framen
+│       │
+│       ├── experiment/
+│       │   ├── __init__.py
+│       │   ├── params.py          # RetouchParams: dataclass med alle slider-verdier
+│       │   └── loop.py            # params → mål alder → logg Trial → export_trials()
+│       │
+│       ├── camera/
+│       │   ├── __init__.py
+│       │   └── stream.py          # QThread, webcam → frames som signal, frame-dropping
+│       │
+│       └── ui/
 │           ├── __init__.py
-│           ├── color_panel.py     # palett + penselstørrelse
-│           ├── tool_panel.py
-│           ├── beauty_panel.py    # retusj-slidere, alder-avlesning, kurve, eksport
-│           ├── ai_panel.py        # ansiktsinfo, modellvalg (Levi-Hassner / InsightFace)
-│           └── layer_panel.py     # valgfri
+│           ├── main_window.py
+│           ├── menus.py           # de seks menyene fra kravlista
+│           ├── canvas.py          # tegning, museinteraksjon
+│           ├── viewport.py        # zoom/pan-state + koordinat-mapping skjerm↔bilde
+│           ├── toolbar.py
+│           ├── camera_window.py   # live-vindu, "Capture" → inn i editoren
+│           └── panels/
+│               ├── __init__.py
+│               ├── color_panel.py     # palett + penselstørrelse
+│               ├── tool_panel.py
+│               ├── beauty_panel.py    # retusj-slidere, alder-avlesning, kurve, eksport
+│               ├── ai_panel.py        # ansiktsinfo, modellvalg
+│               └── layer_panel.py     # valgfri
 │
 ├── assets/                        # penselteksturer, ikoner, overlay-PNG-er
 ├── data/
 │   └── faces/                     # testbilder med kjent alder, for eval_age.py
+├── models/                        # .onnx / .caffemodel — i .gitignore
 ├── exports/                       # CSV fra loopen — i .gitignore
 │
 ├── tests/
