@@ -1,0 +1,9 @@
+# --- IDEer ---
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# --- OS-filer ---
+.DS_Store
+Thumbs.db
