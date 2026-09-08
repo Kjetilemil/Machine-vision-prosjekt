@@ -9,6 +9,11 @@ Documentation: https://doc.qt.io/qtforpython-6/
 # Use the IKT213 enviroment
 # Install in terminal: pip install PyQt6
 
+Tanke på hvordan oppgaven kan bli:
+Dekke kravene som er gitt i oppgaven, men også en beauty-loop hvor man kan redigere bilde av ansiktet sitt til å se yngre ut, dermed bruke -
+AI Detection til å gjette hvor ung personen er. Dette kan skape en gøy loop hvor man minmaxer beauty standards.
+
+
 Plan for oppsett:
 mv-editor/
 ├── main.py                    # starter QApplication, ingenting annet
