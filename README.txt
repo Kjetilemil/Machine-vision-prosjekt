@@ -16,45 +16,60 @@ AI Detection til å gjette hvor ung personen er. Dette kan skape en gøy loop hv
 
 Plan for oppsett:
 mv-editor/
-├── main.py                    # starter QApplication, ingenting annet
+├── main.py
 ├── requirements.txt
-├── README.md
+├── README.md                      # inkl. hvor modellfiler lastes ned fra
+├── config.py                      # stier, modellnavn, standardverdier
+│
+├── scripts/
+│   └── download_models.py         # henter .onnx-filene så alle i gruppa får samme oppsett
 │
 ├── src/
-│   ├── core/                  # ren bildelogikk — INGEN Qt-import
-│   │   ├── document.py        # aktivt bilde, filsti, dirty-flag, undo-stack
-│   │   ├── history.py         # undo/redo
-│   │   ├── fileio.py          # new, open, save, save as, properties
-│   │   ├── selection.py       # rect / lasso / polygon → binær maske
-│   │   ├── transforms.py      # crop, resize, rotate, flip
-│   │   ├── filters.py         # gaussian, sobel, binary, histogram-terskling
-│   │   ├── drawing.py         # pensel, viskelær, teksturer, tekst
-│   │   ├── shapes.py          # figurer, outline/fill
-│   │   └── clipboard.py       # copy, cut, paste (jobber mot maske)
+│   ├── core/                      # ren bildelogikk — INGEN Qt-import
+│   │   ├── document.py            # aktivt bilde, filsti, dirty-flag, (lag-liste)
+│   │   ├── history.py             # undo/redo
+│   │   ├── fileio.py              # new, open, save, save as, properties
+│   │   ├── selection.py           # rect / lasso / polygon → binær maske
+│   │   ├── transforms.py          # crop, resize, rotate 90 L/R, flip v/h
+│   │   ├── filters.py             # gaussian, sobel, binary, histogram-terskling
+│   │   ├── drawing.py             # pensel, viskelær, teksturer, tekst
+│   │   ├── shapes.py              # figurer, outline/fill
+│   │   └── clipboard.py           # copy, cut, paste (jobber mot maske)
 │   │
-│   ├── vision/                # AI-delen — heller ikke Qt
-│   │   ├── detector.py        # YOLO: frame → [(label, conf, box)]
-│   │   ├── face.py            # ansiktsdeteksjon + landmarks
-│   │   ├── age.py             # face crop → aldersbøtte
-│   │   ├── effects.py         # overlays, bakgrunnsbytte
-│   │   ├── overlay.py         # tegner bokser/labels på en kopi av framen
-│   │   └── models/            # .onnx / .caffemodel — i .gitignore
+│   ├── vision/                    # AI-delen — heller ikke Qt
+│   │   ├── face.py                # ansiktsdeteksjon + landmarks → FaceResult
+│   │   ├── age.py                 # face crop → alder (+ konfidens)
+│   │   ├── beauty.py              # retusj-operasjoner: skin smoothing, blur,
+│   │   │                          #   lysstyrke/kontrast, warp — kjøres på ansiktsmaske
+│   │   ├── loop.py                # beauty-loopen: mål alder før/etter, hold historikk
+│   │   ├── effects.py             # overlays, bakgrunnsbytte (valgfri)
+│   │   ├── overlay.py             # tegner bokser/labels på KOPI av framen
+│   │   └── models/                # .onnx — i .gitignore
 │   │
 │   ├── camera/
-│   │   └── stream.py          # QThread, leser webcam, sender frames som signal
+│   │   └── stream.py              # QThread, webcam → frames som signal
 │   │
 │   └── ui/
-│       ├── main_window.py     # setter sammen alt
-│       ├── menus.py           # de seks menyene fra kravlista
-│       ├── canvas.py          # QWidget: tegning, zoom, museinteraksjon
+│       ├── main_window.py
+│       ├── menus.py               # de seks menyene fra kravlista
+│       ├── canvas.py              # tegning, museinteraksjon
+│       ├── viewport.py            # zoom/pan-state + koordinat-mapping skjerm↔bilde
 │       ├── toolbar.py
-│       ├── camera_window.py   # live-vindu, "Capture"-knapp → inn i editoren
+│       ├── camera_window.py       # live-vindu, "Capture" → inn i editoren
 │       └── panels/
-│           ├── color_panel.py
+│           ├── color_panel.py     # palett + penselstørrelse
 │           ├── tool_panel.py
-│           ├── ai_panel.py    # deteksjonsliste, alder, filtervalg
-│           └── layer_panel.py # valgfri
+│           ├── beauty_panel.py    # slidere for retusj + alder-avlesning
+│           ├── ai_panel.py        # ansiktsinfo, modellvalg
+│           └── layer_panel.py     # valgfri
 │
+├── assets/
+├── tests/
+│   ├── test_filters.py
+│   ├── test_transforms.py
+│   ├── test_selection.py
+│   └── test_age.py                # kjører mot 2–3 testbilder
+└── docs/
 ├── assets/                    # penselteksturer, ikoner, overlay-PNG-er
 ├── tests/                     # test_filters.py, test_transforms.py
 └── docs/                      # rapport, skjermbilder, arkitekturdiagram
