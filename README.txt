@@ -22,14 +22,15 @@ mv-editor/
 ├── .gitignore                     # .venv/ *.egg-info/ models/ exports/ __pycache__/
 │
 ├── scripts/
-│   ├── download_models.py         # Levi-Hassner (Caffe) + checksum.
-│   │                              #   InsightFace henter sine egne til ~/.insightface
+│   ├── download_models.py         # Levi-Hassner (Caffe) + checksum. Instansierer også
+│   │                              #   FaceAnalysis én gang → henter ~/.insightface
 │   └── eval_age.py                # treffsikkerhet mot kjente aldre → tabell til rapport
 │
 ├── src/
 │   └── mv_editor/
 │       ├── __init__.py
-│       ├── app.py                 # main(): QApplication + MainWindow
+│       ├── app.py                 # main(): QApplication + MainWindow.
+│       │                          #   Sjekker ~/.insightface, sier fra hvis tom
 │       ├── config.py              # parents[2] for rotmappe, modellnavn, standardverdier
 │       │
 │       ├── core/                  # ren bildelogikk — INGEN Qt, INGEN modeller
@@ -37,8 +38,11 @@ mv-editor/
 │       │   ├── document.py        # eier self.image (BGR ndarray), filsti, dirty-flag
 │       │   ├── history.py         # undo/redo: stack av hele arrays, maks 20
 │       │   ├── fileio.py          # new, open, save, save as, properties
+│       │   ├── masking.py         # KONVENSJONEN bor her (modul-docstring):
+│       │   │                      #   float32, én kanal, 0.0–1.0, samme H×W.
+│       │   │                      #   blend(base, edited, mask)
 │       │   ├── selection.py       # rect / lasso / polygon → binær maske
-│       │   ├── masking.py         # blend(base, edited, mask) — float32 0.0–1.0, én kanal
+│       │   │                      #   (float32 0/1 — se masking.py)
 │       │   ├── transforms.py      # crop, resize, rotate 90 L/R, flip v/h
 │       │   ├── filters.py         # gaussian, sobel, binary, histogram-terskling
 │       │   ├── retouch.py         # skin smoothing, blur, lysstyrke/kontrast, warp
@@ -51,7 +55,8 @@ mv-editor/
 │       │   ├── face.py            # deteksjon + landmarks → FaceResult
 │       │   ├── age.py             # AgeEstimator-protokoll: InsightFaceAge (primær,
 │       │   │                      #   regresjon) + LeviHassnerAge (softmax-forventning)
-│       │   ├── mask.py            # landmarks → ansiktsmaske (hud, øyne, munn)
+│       │   ├── mask.py            # landmarks → ansiktsmaske, fjæret
+│       │   │                      #   (float32 0.0–1.0 — se core/masking.py)
 │       │   ├── effects.py         # overlays, bakgrunnsbytte (valgfri)
 │       │   └── overlay.py         # tegner bokser/labels på KOPI av framen
 │       │
