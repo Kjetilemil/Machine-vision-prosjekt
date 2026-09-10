@@ -2,12 +2,8 @@
 Project group 6
 
 
-This project uses the pyQt6 library for gui.
-Documentation: https://doc.qt.io/qtforpython-6/
-
 
 # Use the IKT213 enviroment
-# Install in terminal: pip install PyQt6
 
 Tanke på hvordan oppgaven kan bli:
 Dekke kravene som er gitt i oppgaven, men også en beauty-loop hvor man kan redigere bilde av ansiktet sitt til å se yngre ut, dermed bruke -
