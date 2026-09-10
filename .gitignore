@@ -4,3 +4,4 @@ __pycache__/
 models/
 exports/
 .DS_Store
+CLAUDE.md
