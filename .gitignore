@@ -1,13 +1,6 @@
-# --- Python ---
+.venv/
+*.egg-info/
 __pycache__/
-*.py[cod]
-
-# --- IDEer ---
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# --- OS-filer ---
+models/
+exports/
 .DS_Store
-Thumbs.db
