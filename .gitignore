@@ -1,7 +1,0 @@
-.venv/
-*.egg-info/
-__pycache__/
-models/
-exports/
-.DS_Store
-CLAUDE.md
