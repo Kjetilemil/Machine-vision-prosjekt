@@ -1,7 +1,26 @@
-.venv/
-*.egg-info/
+# Python
 __pycache__/
-models/
-exports/
+*.py[cod]
+*$py.class
+*.so
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Conda
+*.conda
+
+# IDE
+.vscode/
+.idea/
+
+# OS
 .DS_Store
-CLAUDE.md
+Thumbs.db
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
