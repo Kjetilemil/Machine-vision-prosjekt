@@ -7,12 +7,14 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.setWindowTitle("Image editor")
         self.resize(900, 700)
-        menu_bar = self.menuBar()
         self.setStyleSheet("""
             QMainWindow { background-color: #d3d3d3; }
             QMenuBar { background-color: #666666; }
         """)
+        self.create_menus()
 
+    def create_menus(self):
+        menu_bar = self.menuBar()
 
         # File menu
         file_menu = menu_bar.addMenu("&file")
