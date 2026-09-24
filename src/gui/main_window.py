@@ -1,7 +1,12 @@
 import sys
 from PyQt6.QtWidgets import QApplication, QMainWindow, QLabel
+from PyQt6.QtCore import Qt
+
+from controllers import open_image_controller
+from gui.menu_options import create_menus
 
 
+# initializes the gui
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -11,61 +16,26 @@ class MainWindow(QMainWindow):
             QMainWindow { background-color: #d3d3d3; }
             QMenuBar { background-color: #666666; }
         """)
-        self.create_menus()
 
-    def create_menus(self):
-        menu_bar = self.menuBar()
+        # creates space in the gui for the imaage 
+        self.image_label = QLabel(self)
+        self.image_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.setCentralWidget(self.image_label)
 
-        # File menu
-        file_menu = menu_bar.addMenu("&file")
-        file_menu.addAction("New")
-        file_menu.addAction("Open")
-        file_menu.addAction("Save")
-        file_menu.addAction("Save as")
-        file_menu.addAction("Properties")
-        file_menu.addAction("Quit")
-        
-        # Clipboard menu
-        clipboard_menu = menu_bar.addMenu("&clipboard")
-        clipboard_menu.addAction("Copy")
-        clipboard_menu.addAction("Paste")
-        clipboard_menu.addAction("Cut")
+        create_menus(self)
 
-        # Image Menu
-        image_menu = menu_bar.addMenu("&image")
-        image_menu.addAction("Select Rectangular")
-        image_menu.addAction("Select Free-form")
-        image_menu.addAction("Select polygon")
-        image_menu.addAction("Crop")
-        image_menu.addAction("Resize")
-        image_menu.addAction("Rotate right 90")
-        image_menu.addAction("Rotate left 90")
-        image_menu.addAction("Flip vertical")
-        image_menu.addAction("Flip Horizontal")
+    def open_file_system(self):
+        open_image_controller.open_file_system(self)
 
-        # Tools menu
-        tools_menu = menu_bar.addMenu("&tools")
-        tools_menu.addAction("Zoom in")
-        tools_menu.addAction("Zoom out")
-        tools_menu.addAction("Erase")
-        tools_menu.addAction("Color picker")
-        tools_menu.addAction("Paint brush")
-        tools_menu.addAction("Text box")
-        tools_menu.addAction("Gaussian filter")
-        tools_menu.addAction("Soble filter")
-        tools_menu.addAction("Binary filter")
-        tools_menu.addAction("Histogram thresholding")
+    def display_image(self, gui_ready_image):
+        resized_image = gui_ready_image.scaled(
+            self.image_label.size(),
+            Qt.AspectRatioMode.KeepAspectRatio,
+            Qt.TransformationMode.SmoothTransformation
+        )
+        self.image_label.setPixmap(resized_image)
 
-        # Shapes menu 
-        shapes_menu = menu_bar.addMenu("&shapes")
-        shapes_menu.addAction("List of shapes")
-        shapes_menu.addAction("Outline color")
-        shapes_menu.addAction("Fill color")
 
-        # Color menu
-        color_menu = menu_bar.addMenu("&colors")
-        color_menu.addAction("Color palette")
-        color_menu.addAction("Brush size")
 
 
 def run_main_window():
