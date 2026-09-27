@@ -25,7 +25,7 @@ class MainWindow(QMainWindow):
         create_menus(self)
 
     def open_file_system(self):
-        open_image_controller.open_file_system(self)
+        open_image_controller.handle_open_image(self)
 
     def display_image(self, gui_ready_image):
         resized_image = gui_ready_image.scaled(
@@ -34,8 +34,6 @@ class MainWindow(QMainWindow):
             Qt.TransformationMode.SmoothTransformation
         )
         self.image_label.setPixmap(resized_image)
-
-
 
 
 def run_main_window():
