@@ -2,8 +2,8 @@ import sys
 from PyQt6.QtWidgets import QApplication, QMainWindow, QLabel
 from PyQt6.QtCore import Qt
 
-from controllers import open_image_controller
-from gui.menu_options import create_menus
+from controller.controller import Controller
+from gui.menubar import create_menubar
 
 
 # initializes the gui
@@ -17,15 +17,10 @@ class MainWindow(QMainWindow):
             QMenuBar { background-color: #666666; }
         """)
 
-        # creates space in the gui for the imaage 
+        # creates space in the gui for the imaage
         self.image_label = QLabel(self)
         self.image_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.setCentralWidget(self.image_label)
-
-        create_menus(self)
-
-    def open_file_system(self):
-        open_image_controller.handle_open_image(self)
 
     def display_image(self, gui_ready_image):
         resized_image = gui_ready_image.scaled(
@@ -38,6 +33,10 @@ class MainWindow(QMainWindow):
 
 def run_main_window():
     app = QApplication(sys.argv)
+
     window = MainWindow()
+    controller = Controller(window)
+    create_menubar(window, controller)
+
     window.show()
     sys.exit(app.exec())
