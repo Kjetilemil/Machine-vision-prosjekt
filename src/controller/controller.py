@@ -1,4 +1,4 @@
-from controller.file_controller import open_image, save_image
+from controller.file_controller import open_image, save_image, new_image
 
 class Controller:
     def __init__(self, window):
@@ -10,3 +10,6 @@ class Controller:
 
     def save_image_as(self):
         save_image(self)
+
+    def new_image(self):
+        new_image(self)
