@@ -1,6 +1,6 @@
 from PyQt6.QtWidgets import QFileDialog
-from image_tools.open_image import open_image
-from image_tools.convert_image_for_gui import convert_opencv_to_gui_image
+from image.filesystem import open_image
+from image.convert_image_for_gui import convert_opencv_to_gui_image
 
 
 # function to access files and select image, processes the image and displays it  
