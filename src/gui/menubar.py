@@ -45,7 +45,7 @@ def create_menubar(window: QMainWindow, controller: Controller):
     add_menu_action(tools_menu, "Paint brush")
     add_menu_action(tools_menu, "Text box")
     add_menu_action(tools_menu, "Gaussian filter", controller.apply_gaussian_filter)
-    add_menu_action(tools_menu, "Sobel filter")
+    add_menu_action(tools_menu, "Sobel filter", controller.apply_sobel_filter)
     add_menu_action(tools_menu, "Binary filter")
     add_menu_action(tools_menu, "Histogram thresholding")
 
