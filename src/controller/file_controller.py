@@ -3,6 +3,7 @@ from pathlib import Path
 from PyQt6.QtWidgets import QFileDialog
 from image.filesystem import filesystem_open_image, filesystem_save_image
 from image.convert_image_for_gui import convert_opencv_to_gui_image
+from image.blank_canvas import run_blank_canvas
 
 
 # function to access files and select image, processes the image and displays it  
@@ -57,3 +58,13 @@ def save_image_as(controller):
             controller.current_path = image_file_name
         except ValueError as error:
             print(error)
+
+
+#creates a blank canvas by pressing new
+def new_image(controller):
+    
+    cv_image = run_blank_canvas()
+    controller.current_img = cv_image
+    controller.current_path = None
+    gui_image = convert_opencv_to_gui_image(cv_image)
+    controller.window.display_image(gui_image)

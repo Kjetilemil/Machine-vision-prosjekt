@@ -1,4 +1,4 @@
-from controller.file_controller import open_image, save_image, save_image_as
+from controller.file_controller import open_image, save_image, save_image_as, new_image
 from image.convert_image_for_gui import convert_opencv_to_gui_image
 from processing.binary import apply_binary_filter
 from processing.constants import (
@@ -131,4 +131,5 @@ class Controller:
         gui_image = convert_opencv_to_gui_image(processed_image)
         self.window.display_image(gui_image)
 
-    
+    def new_image(self):
+        new_image(self)

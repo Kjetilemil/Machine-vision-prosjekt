@@ -14,7 +14,7 @@ def create_menubar(window: QMainWindow, controller: Controller):
     menu_bar = window.menuBar()
 
     file_menu = menu_bar.addMenu("&File")
-    add_menu_action(file_menu, "New")
+    add_menu_action(file_menu, "New", controller.new_image)
     add_menu_action(file_menu, "Open", controller.open_image)
     add_menu_action(file_menu, "Save", controller.save_image)
     add_menu_action(file_menu, "Save as", controller.save_image_as)
