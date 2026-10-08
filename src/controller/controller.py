@@ -20,6 +20,9 @@ class Controller:
     def open_image(self):
         open_image(self)
 
+    def quit_application(self):
+        self.window.close()
+
     def save_image(self):
         save_image(self)
 
