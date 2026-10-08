@@ -31,7 +31,7 @@ def create_menubar(window: QMainWindow, controller: Controller):
     add_menu_action(image_menu, "Select Free-form")
     add_menu_action(image_menu, "Select polygon")
     add_menu_action(image_menu, "Crop")
-    add_menu_action(image_menu, "Resize")
+    add_menu_action(image_menu, "Resize", controller.resize_image)
     add_menu_action(image_menu, "Rotate right 90", controller.rotate_right)
     add_menu_action(image_menu, "Rotate left 90", controller.rotate_left)
     add_menu_action(image_menu, "Flip vertical", controller.flip_vertical)

@@ -1,5 +1,5 @@
 import sys
-from PyQt6.QtWidgets import QApplication, QMainWindow, QLabel, QMessageBox
+from PyQt6.QtWidgets import QApplication, QMainWindow, QLabel, QMessageBox, QInputDialog
 from PyQt6.QtCore import Qt
 
 from controller.controller import Controller
@@ -30,8 +30,21 @@ class MainWindow(QMainWindow):
         )
         self.image_label.setPixmap(resized_image)
 
+    # displays a dialog box with the properties of the image
     def display_text(self, text):
         QMessageBox.information(self, "Properties", text)
+
+    # dialog box for asking the user for new dimensions when resizing an image
+    def ask_for_resize_dimensions(self):
+        width, ok_width = QInputDialog.getInt(self, "Resize Image", "Enter new width:")
+        if not ok_width:
+            return None, None
+
+        height, ok_height = QInputDialog.getInt(self, "Resize Image", "Enter new height:")
+        if not ok_height:
+            return None, None
+
+        return width, height
 
 def run_main_window():
     app = QApplication(sys.argv)
