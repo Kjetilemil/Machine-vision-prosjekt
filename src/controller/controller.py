@@ -6,6 +6,7 @@ from processing.constants import (
     DEFAULT_GAUSSIAN_KERNEL_SIZE,
     DEFAULT_SOBEL_KERNEL_SIZE,
 )
+from processing.histogram_thresholding import apply_histogram_thresholding
 from processing.gaussian import apply_gaussian_filter
 from processing.sobel import apply_sobel_filter
 
@@ -59,6 +60,16 @@ class Controller:
             self.current_img,
             threshold=DEFAULT_BINARY_THRESHOLD,
         )
+        self.current_img = processed_image
+
+        gui_image = convert_opencv_to_gui_image(processed_image)
+        self.window.display_image(gui_image)
+
+    def apply_histogram_thresholding(self):
+        if self.current_img is None:
+            return
+
+        processed_image = apply_histogram_thresholding(self.current_img)
         self.current_img = processed_image
 
         gui_image = convert_opencv_to_gui_image(processed_image)

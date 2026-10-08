@@ -47,7 +47,7 @@ def create_menubar(window: QMainWindow, controller: Controller):
     add_menu_action(tools_menu, "Gaussian filter", controller.apply_gaussian_filter)
     add_menu_action(tools_menu, "Sobel filter", controller.apply_sobel_filter)
     add_menu_action(tools_menu, "Binary filter", controller.apply_binary_filter)
-    add_menu_action(tools_menu, "Histogram thresholding")
+    add_menu_action(tools_menu, "Histogram thresholding", controller.apply_histogram_thresholding)
 
     shapes_menu = menu_bar.addMenu("&Shapes")
     add_menu_action(shapes_menu, "List of shapes")
