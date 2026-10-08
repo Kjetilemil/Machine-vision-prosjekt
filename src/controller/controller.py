@@ -11,6 +11,7 @@ from processing.gaussian import apply_gaussian_filter
 from processing.sobel import apply_sobel_filter
 from processing.rotate_flip import rotate_right, rotate_left, flip_horizontal, flip_vertical
 from image.properties import get_image_properties
+from processing.resize import resize_image  
 
 
 class Controller:
@@ -32,6 +33,21 @@ class Controller:
         height, width, channels = get_image_properties(self.current_img)
         text = f"Height: {height}, Width: {width}, Channels: {channels}"
         self.window.display_text(text)
+
+    # Resize the current image to new dimensions provided by the user
+    def resize_image(self):
+        if self.current_img is None:
+            return
+
+        width, height = self.window.ask_for_resize_dimensions()
+        if width is None or height is None:
+            return
+
+        resized_image = resize_image(self.current_img, width, height)
+        self.current_img = resized_image
+
+        gui_image = convert_opencv_to_gui_image(resized_image)
+        self.window.display_image(gui_image)
         
 
     def save_image(self):
