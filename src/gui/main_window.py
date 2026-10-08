@@ -1,5 +1,5 @@
 import sys
-from PyQt6.QtWidgets import QApplication, QMainWindow, QLabel
+from PyQt6.QtWidgets import QApplication, QMainWindow, QLabel, QMessageBox
 from PyQt6.QtCore import Qt
 
 from controller.controller import Controller
@@ -30,6 +30,8 @@ class MainWindow(QMainWindow):
         )
         self.image_label.setPixmap(resized_image)
 
+    def display_text(self, text):
+        QMessageBox.information(self, "Properties", text)
 
 def run_main_window():
     app = QApplication(sys.argv)
