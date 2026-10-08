@@ -10,6 +10,7 @@ from processing.histogram_thresholding import apply_histogram_thresholding
 from processing.gaussian import apply_gaussian_filter
 from processing.sobel import apply_sobel_filter
 from processing.rotate_flip import rotate_right, rotate_left, flip_horizontal, flip_vertical
+from image.properties import get_image_properties
 
 
 class Controller:
@@ -23,6 +24,15 @@ class Controller:
 
     def quit_application(self):
         self.window.close()
+
+    def show_image_properties(self):
+        if self.current_img is None:
+            return None
+
+        height, width, channels = get_image_properties(self.current_img)
+        text = f"Height: {height}, Width: {width}, Channels: {channels}"
+        self.window.display_text(text)
+        
 
     def save_image(self):
         save_image(self)

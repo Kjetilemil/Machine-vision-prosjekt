@@ -18,7 +18,7 @@ def create_menubar(window: QMainWindow, controller: Controller):
     add_menu_action(file_menu, "Open", controller.open_image)
     add_menu_action(file_menu, "Save", controller.save_image)
     add_menu_action(file_menu, "Save as", controller.save_image_as)
-    add_menu_action(file_menu, "Properties")
+    add_menu_action(file_menu, "Properties", controller.show_image_properties)
     add_menu_action(file_menu, "Quit", controller.quit_application)
 
     clipboard_menu = menu_bar.addMenu("&Clipboard")
