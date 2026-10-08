@@ -14,4 +14,10 @@ def filesystem_save_image(path: str, img: np.ndarray) -> None:
     if img is None:
         return
 
-    cv2.imwrite(path, img)
+    try:
+        saved = cv2.imwrite(path, img)
+    except cv2.error as error:
+        raise ValueError(f"Could not save the image: {error}") from error
+
+    if not saved:
+        raise ValueError("Could not save the image")
