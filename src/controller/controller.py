@@ -13,6 +13,8 @@ from processing.rotate_flip import rotate_right, rotate_left, flip_horizontal, f
 from image.properties import get_image_properties, get_pixel_color
 from processing.resize import resize_image  
 from processing.zoom import zoom_in as calculate_zoom_in, zoom_out as calculate_zoom_out
+from image.copy import copy_image
+from image.blank_canvas import create_blank_canvas 
 
 
 class Controller:
@@ -22,6 +24,7 @@ class Controller:
         self.current_path = None
         self.zoom_factor = 1.0
         self.current_tool = None 
+        self.copied_image = None
 
     def zoom_in(self):
         self._start_zoom_preview(calculate_zoom_in)
@@ -192,3 +195,35 @@ class Controller:
             blue, green, red = get_pixel_color(self.current_img, x, y)
             color_info = f"Color at ({x}, {y}): R={red}, G={green}, B={blue}"
             self.window.display_status(color_info)
+
+    # copies the current image
+    def copy_image(self):
+        if self.current_img is None:
+            return
+
+        self.copied_image = copy_image(self.current_img)
+        self.window.display_status("Image copied.")
+
+    # paste the copied image into the current image
+    def paste_image(self):
+        if self.copied_image is None:
+            return
+
+        self.current_img = copy_image(self.copied_image)
+        self.current_path = None
+        gui_image = convert_opencv_to_gui_image(self.current_img)
+        self.window.display_image(gui_image)
+
+    # cuts the current image
+    def cut_image(self):
+        if self.current_img is None:
+            return
+
+        self.copied_image = copy_image(self.current_img)
+
+        height, width, channels = get_image_properties(self.current_img)
+        self.current_img = create_blank_canvas(width, height, (255, 255, 255))
+
+        gui_image = convert_opencv_to_gui_image(self.current_img)
+        self.window.display_image(gui_image)
+        self.window.display_status("Image cut")

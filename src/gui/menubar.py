@@ -22,9 +22,9 @@ def create_menubar(window: QMainWindow, controller: Controller):
     add_menu_action(file_menu, "Quit", controller.quit_application)
 
     clipboard_menu = menu_bar.addMenu("&Clipboard")
-    add_menu_action(clipboard_menu, "Copy")
-    add_menu_action(clipboard_menu, "Paste")
-    add_menu_action(clipboard_menu, "Cut")
+    add_menu_action(clipboard_menu, "Copy", controller.copy_image)
+    add_menu_action(clipboard_menu, "Paste", controller.paste_image)
+    add_menu_action(clipboard_menu, "Cut", controller.cut_image)
 
     image_menu = menu_bar.addMenu("&Image")
     add_menu_action(image_menu, "Select Rectangular")
