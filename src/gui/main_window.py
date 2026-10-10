@@ -1,9 +1,10 @@
 import sys
-from PyQt6.QtWidgets import QApplication, QMainWindow, QLabel, QMessageBox, QInputDialog
+from PyQt6.QtWidgets import QApplication, QMainWindow, QMessageBox, QInputDialog
 from PyQt6.QtCore import Qt
 
 from controller.controller import Controller
 from gui.menubar import create_menubar
+from gui.zoomable_label import ZoomableLabel
 
 
 # initializes the gui
@@ -18,17 +19,18 @@ class MainWindow(QMainWindow):
         """)
 
         # creates space in the gui for the imaage
-        self.image_label = QLabel(self)
+        self.image_label = ZoomableLabel(self)
         self.image_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.setCentralWidget(self.image_label)
 
     def display_image(self, gui_ready_image):
-        resized_image = gui_ready_image.scaled(
-            self.image_label.size(),
-            Qt.AspectRatioMode.KeepAspectRatio,
-            Qt.TransformationMode.SmoothTransformation
-        )
-        self.image_label.setPixmap(resized_image)
+        self.image_label.set_image(gui_ready_image)
+
+    def start_zoom_preview(self, zoom_factor, callback):
+        self.image_label.start_zoom_preview(zoom_factor, callback)
+
+    def set_zoom_factor(self, zoom_factor, image_x=None, image_y=None, view_x=None, view_y=None):
+        self.image_label.set_zoom(zoom_factor, image_x, image_y, view_x, view_y)
 
     # displays a dialog box with the properties of the image
     def display_text(self, text):

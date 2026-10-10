@@ -12,6 +12,7 @@ from processing.sobel import apply_sobel_filter
 from processing.rotate_flip import rotate_right, rotate_left, flip_horizontal, flip_vertical
 from image.properties import get_image_properties
 from processing.resize import resize_image  
+from processing.zoom import zoom_in as calculate_zoom_in, zoom_out as calculate_zoom_out
 
 
 class Controller:
@@ -19,6 +20,33 @@ class Controller:
         self.window = window
         self.current_img = None
         self.current_path = None
+        self.zoom_factor = 1.0
+
+    def zoom_in(self):
+        self._start_zoom_preview(calculate_zoom_in)
+
+    def zoom_out(self):
+        if self.current_img is None:
+            return
+
+        self.zoom_factor = calculate_zoom_out(self.zoom_factor)
+        self.window.set_zoom_factor(self.zoom_factor)
+
+    def _start_zoom_preview(self, calculate_zoom):
+        if self.current_img is None:
+            return
+
+        next_zoom = calculate_zoom(self.zoom_factor)
+        self.window.start_zoom_preview(
+            next_zoom,
+            lambda image_x, image_y, view_x, view_y: self._apply_zoom(
+                next_zoom, image_x, image_y, view_x, view_y
+            ),
+        )
+
+    def _apply_zoom(self, zoom_factor, image_x, image_y, view_x, view_y):
+        self.zoom_factor = zoom_factor
+        self.window.set_zoom_factor(zoom_factor, image_x, image_y, view_x, view_y)
 
     def open_image(self):
         open_image(self)
