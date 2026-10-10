@@ -33,8 +33,12 @@ class MainWindow(QMainWindow):
         self.image_label.set_zoom(zoom_factor, image_x, image_y, view_x, view_y)
 
     # displays a dialog box with the properties of the image
-    def display_text(self, text):
+    def display_text(self, text): 
         QMessageBox.information(self, "Properties", text)
+
+    # displays message in the status bar of the gui
+    def display_status(self, text):
+        self.statusBar().showMessage(text)
 
     # dialog box for asking the user for new dimensions when resizing an image
     def ask_for_resize_dimensions(self):
@@ -54,6 +58,7 @@ def run_main_window():
     window = MainWindow()
     controller = Controller(window)
     create_menubar(window, controller)
+    window.image_label.image_clicked.connect(controller.handle_image_click)
 
     window.show()
     sys.exit(app.exec())

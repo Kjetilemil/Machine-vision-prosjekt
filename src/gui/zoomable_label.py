@@ -1,10 +1,12 @@
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtGui import QPainter, QPen
 from PyQt6.QtWidgets import QLabel
 
 
 class ZoomableLabel(QLabel):
+    image_clicked = pyqtSignal(int, int)
     def __init__(self, parent=None):
+        
         super().__init__(parent)
         self._source_image = None
         self._zoom_factor = 1.0
@@ -13,6 +15,8 @@ class ZoomableLabel(QLabel):
         self._preview_zoom = None
         self._preview_position = None
         self._zoom_callback = None
+        
+        
 
     def set_image(self, image):
         self._source_image = image
@@ -132,4 +136,15 @@ class ZoomableLabel(QLabel):
                 callback(*image_focus, *view_focus)
                 event.accept()
                 return
+
+        # checks where the user clicked on the image and emits a signal with the coordinates
+        if self._source_image is not None:
+            click = self._preview_focus(event.position().toPoint())
+            if click is not None:
+                image_position, window_position = click
+                x_part, y_part = image_position
+                x = int(x_part * self._source_image.width())
+                y = int(y_part * self._source_image.height())
+                self.image_clicked.emit(x, y)
+
         super().mousePressEvent(event)
