@@ -14,7 +14,9 @@ from image.properties import get_image_properties, get_pixel_color
 from processing.resize import resize_image  
 from processing.zoom import zoom_in as calculate_zoom_in, zoom_out as calculate_zoom_out
 from image.copy import copy_image
-from image.blank_canvas import create_blank_canvas 
+from image.blank_canvas import create_blank_canvas
+from processing.object_selection import select_object, draw_selection, remove_object
+from processing.object_effects import blur_object, shift_object_color
 
 
 class Controller:
@@ -25,6 +27,7 @@ class Controller:
         self.zoom_factor = 1.0
         self.current_tool = None 
         self.copied_image = None
+        self.selected_mask = None
 
     def zoom_in(self):
         self._start_zoom_preview(calculate_zoom_in)
@@ -195,6 +198,68 @@ class Controller:
             blue, green, red = get_pixel_color(self.current_img, x, y)
             color_info = f"Color at ({x}, {y}): R={red}, G={green}, B={blue}"
             self.window.display_status(color_info)
+
+        elif self.current_tool == "select_object":
+            if self.current_img is None:
+                return
+            mask = select_object(self.current_img, x, y)
+            if not mask.any():
+                self.window.display_status("Could not find an object there.")
+                return
+            self.selected_mask = mask
+            pixels = int((mask > 0).sum())
+            self.window.display_status(f"Object selected ({pixels} pixels)")
+            preview = draw_selection(self.current_img, mask)
+            self.window.display_image(convert_opencv_to_gui_image(preview))
+
+    # selects the object selection tool
+    def select_object_tool(self):
+        self.current_tool = "select_object"
+        self.window.display_status("Select object: click on an object in the image.")
+
+        # removes the selected object and fills the gap with background
+    def remove_selected_object(self):
+        if self.current_img is None or self.selected_mask is None:
+            self.window.display_status("Select an object first.")
+            return
+        # the image may have been rotated or resized since the object was selected
+        if self.selected_mask.shape != self.current_img.shape[:2]:
+            self.selected_mask = None
+            self.window.display_status("The image has changed, select the object again.")
+            return
+
+        self.current_img = remove_object(self.current_img, self.selected_mask)
+        self.selected_mask = None
+        self.window.display_image(convert_opencv_to_gui_image(self.current_img))
+        self.window.display_status("Object removed.")
+
+    # blurs the selected object
+    def blur_selected_object(self):
+        if self.current_img is None or self.selected_mask is None:
+            self.window.display_status("Select an object first.")
+            return
+        if self.selected_mask.shape != self.current_img.shape[:2]:
+            self.selected_mask = None
+            self.window.display_status("The image has changed, select the object again.")
+            return
+
+        self.current_img = blur_object(self.current_img, self.selected_mask)
+        self.window.display_image(convert_opencv_to_gui_image(self.current_img))
+        self.window.display_status("Object blurred.")
+
+    # changes the color of the selected object
+    def shift_selected_object_color(self):
+        if self.current_img is None or self.selected_mask is None:
+            self.window.display_status("Select an object first.")
+            return
+        if self.selected_mask.shape != self.current_img.shape[:2]:
+            self.selected_mask = None
+            self.window.display_status("The image has changed, select the object again.")
+            return
+
+        self.current_img = shift_object_color(self.current_img, self.selected_mask)
+        self.window.display_image(convert_opencv_to_gui_image(self.current_img))
+        self.window.display_status("Object color changed.")
 
     # copies the current image
     def copy_image(self):
