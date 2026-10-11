@@ -54,3 +54,10 @@ def draw_selection(image, mask):
     thickness = max(2, max(image.shape[:2]) // 300)  # thicker line on bigger images
     cv2.drawContours(preview, contours, -1, (0, 255, 255), thickness)  # yellow in BGR
     return preview
+
+def remove_object(image, mask):
+    """Removes the object and fills the hole with generated background (inpainting)."""
+    # make the mask a bit bigger so no edge pixels from the object are left behind
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (9, 9))
+    bigger_mask = cv2.dilate(mask, kernel)
+    return cv2.inpaint(image, bigger_mask, 5, cv2.INPAINT_TELEA)
