@@ -10,7 +10,7 @@ from processing.histogram_thresholding import apply_histogram_thresholding
 from processing.gaussian import apply_gaussian_filter
 from processing.sobel import apply_sobel_filter
 from processing.rotate_flip import rotate_right, rotate_left, flip_horizontal, flip_vertical
-from image.properties import get_image_properties
+from image.properties import get_image_properties, get_pixel_color
 from processing.resize import resize_image  
 from processing.zoom import zoom_in as calculate_zoom_in, zoom_out as calculate_zoom_out
 
@@ -21,6 +21,7 @@ class Controller:
         self.current_img = None
         self.current_path = None
         self.zoom_factor = 1.0
+        self.current_tool = None 
 
     def zoom_in(self):
         self._start_zoom_preview(calculate_zoom_in)
@@ -177,3 +178,17 @@ class Controller:
 
     def new_image(self):
         new_image(self)
+
+    # selects the color picker tool
+    def select_color_tool(self):
+        self.current_tool = "color_picker"
+        self.window.display_status("Color picker tool selected. Click on the image to pick a color.")
+
+    def handle_image_click(self, x, y):
+        if self.current_tool == "color_picker":
+            if self.current_img is None:
+                return
+
+            blue, green, red = get_pixel_color(self.current_img, x, y)
+            color_info = f"Color at ({x}, {y}): R={red}, G={green}, B={blue}"
+            self.window.display_status(color_info)

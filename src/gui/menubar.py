@@ -41,7 +41,7 @@ def create_menubar(window: QMainWindow, controller: Controller):
     add_menu_action(tools_menu, "Zoom in", controller.zoom_in)
     add_menu_action(tools_menu, "Zoom out", controller.zoom_out)
     add_menu_action(tools_menu, "Erase")
-    add_menu_action(tools_menu, "Color picker")
+    add_menu_action(tools_menu, "Color picker", controller.select_color_tool)
     add_menu_action(tools_menu, "Paint brush")
     add_menu_action(tools_menu, "Text box")
     add_menu_action(tools_menu, "Gaussian filter", controller.apply_gaussian_filter)
