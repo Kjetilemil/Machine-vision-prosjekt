@@ -196,6 +196,16 @@ class Controller:
             color_info = f"Color at ({x}, {y}): R={red}, G={green}, B={blue}"
             self.window.display_status(color_info)
 
+        elif self.current_tool == "select_object":
+            if self.current_img is None:
+                return
+            self.window.display_status(f"You clicked at ({x}, {y})")
+
+    # selects the object selection tool
+    def select_object_tool(self):
+        self.current_tool = "select_object"
+        self.window.display_status("Select object: click on an object in the image.")
+
     # copies the current image
     def copy_image(self):
         if self.current_img is None:

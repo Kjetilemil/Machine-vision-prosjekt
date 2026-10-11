@@ -36,6 +36,7 @@ def create_menubar(window: QMainWindow, controller: Controller):
     add_menu_action(image_menu, "Rotate left 90", controller.rotate_left)
     add_menu_action(image_menu, "Flip vertical", controller.flip_vertical)
     add_menu_action(image_menu, "Flip Horizontal", controller.flip_horizontal)
+    add_menu_action(image_menu, "Select object", controller.select_object_tool)
 
     tools_menu = menu_bar.addMenu("&Tools")
     add_menu_action(tools_menu, "Zoom in", controller.zoom_in)
