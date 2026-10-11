@@ -16,6 +16,7 @@ from processing.zoom import zoom_in as calculate_zoom_in, zoom_out as calculate_
 from image.copy import copy_image
 from image.blank_canvas import create_blank_canvas
 from processing.object_selection import select_object, draw_selection, remove_object
+from processing.object_effects import blur_object, shift_object_color
 
 
 class Controller:
@@ -231,6 +232,34 @@ class Controller:
         self.selected_mask = None
         self.window.display_image(convert_opencv_to_gui_image(self.current_img))
         self.window.display_status("Object removed.")
+
+    # blurs the selected object
+    def blur_selected_object(self):
+        if self.current_img is None or self.selected_mask is None:
+            self.window.display_status("Select an object first.")
+            return
+        if self.selected_mask.shape != self.current_img.shape[:2]:
+            self.selected_mask = None
+            self.window.display_status("The image has changed, select the object again.")
+            return
+
+        self.current_img = blur_object(self.current_img, self.selected_mask)
+        self.window.display_image(convert_opencv_to_gui_image(self.current_img))
+        self.window.display_status("Object blurred.")
+
+    # changes the color of the selected object
+    def shift_selected_object_color(self):
+        if self.current_img is None or self.selected_mask is None:
+            self.window.display_status("Select an object first.")
+            return
+        if self.selected_mask.shape != self.current_img.shape[:2]:
+            self.selected_mask = None
+            self.window.display_status("The image has changed, select the object again.")
+            return
+
+        self.current_img = shift_object_color(self.current_img, self.selected_mask)
+        self.window.display_image(convert_opencv_to_gui_image(self.current_img))
+        self.window.display_status("Object color changed.")
 
     # copies the current image
     def copy_image(self):

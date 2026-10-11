@@ -38,6 +38,8 @@ def create_menubar(window: QMainWindow, controller: Controller):
     add_menu_action(image_menu, "Flip Horizontal", controller.flip_horizontal)
     add_menu_action(image_menu, "Select object", controller.select_object_tool)
     add_menu_action(image_menu, "Remove object", controller.remove_selected_object)
+    add_menu_action(image_menu, "Blur object", controller.blur_selected_object)
+    add_menu_action(image_menu, "Change object color", controller.shift_selected_object_color)
 
     tools_menu = menu_bar.addMenu("&Tools")
     add_menu_action(tools_menu, "Zoom in", controller.zoom_in)
