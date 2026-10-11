@@ -1,9 +1,19 @@
 import sys
-from PyQt6.QtWidgets import QApplication, QMainWindow, QMessageBox, QInputDialog
+from PyQt6.QtWidgets import (
+    QApplication,
+    QMainWindow,
+    QMessageBox,
+    QInputDialog,
+    QPushButton,
+    QStackedWidget,
+    QVBoxLayout,
+    QWidget,
+)
 from PyQt6.QtCore import Qt
 
 from controller.controller import Controller
 from gui.menubar import create_menubar
+from gui.toolbar import create_toolbar
 from gui.zoomable_label import ZoomableLabel
 
 
@@ -18,13 +28,32 @@ class MainWindow(QMainWindow):
             QMenuBar { background-color: #666666; }
         """)
 
+        # start screen with a big button, shown until an image is opened
+        self.open_button = QPushButton("Open image")
+        self.open_button.setStyleSheet("""
+            QPushButton {
+                font-size: 18px; padding: 12px 32px; border-radius: 6px;
+                background-color: #666666; color: white;
+            }
+            QPushButton:hover { background-color: #555555; }
+        """)
+        start_screen = QWidget()
+        start_layout = QVBoxLayout(start_screen)
+        start_layout.addWidget(self.open_button, alignment=Qt.AlignmentFlag.AlignCenter)
+
         # creates space in the gui for the imaage
         self.image_label = ZoomableLabel(self)
         self.image_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.setCentralWidget(self.image_label)
+
+        # the stack shows one of them at a time: start screen first, then the image
+        self.pages = QStackedWidget()
+        self.pages.addWidget(start_screen)
+        self.pages.addWidget(self.image_label)
+        self.setCentralWidget(self.pages)
 
     def display_image(self, gui_ready_image):
         self.image_label.set_image(gui_ready_image)
+        self.pages.setCurrentWidget(self.image_label)
 
     def start_zoom_preview(self, zoom_factor, callback):
         self.image_label.start_zoom_preview(zoom_factor, callback)
@@ -58,6 +87,8 @@ def run_main_window():
     window = MainWindow()
     controller = Controller(window)
     create_menubar(window, controller)
+    create_toolbar(window, controller)
+    window.open_button.clicked.connect(controller.open_image)
     window.image_label.image_clicked.connect(controller.handle_image_click)
 
     window.show()

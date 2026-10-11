@@ -1,12 +1,15 @@
-from PyQt6.QtGui import QAction
+from PyQt6.QtGui import QAction, QKeySequence
 from PyQt6.QtWidgets import QMenu, QMainWindow
 from controller.controller import Controller
 
-def add_menu_action(menu: QMenu, action_name: str, func: callable = None):
+def add_menu_action(menu: QMenu, action_name: str, func: callable = None, shortcut=None):
     action = QAction(action_name, menu)
     
     if func is not None:
         action.triggered.connect(func)
+
+    if shortcut is not None:
+        action.setShortcut(shortcut)
     
     menu.addAction(action)
 
@@ -20,6 +23,11 @@ def create_menubar(window: QMainWindow, controller: Controller):
     add_menu_action(file_menu, "Save as", controller.save_image_as)
     add_menu_action(file_menu, "Properties", controller.show_image_properties)
     add_menu_action(file_menu, "Quit", controller.quit_application)
+
+    # StandardKey gives Cmd+Z / Cmd+Shift+Z on Mac and Ctrl+Z / Ctrl+Y on Windows
+    edit_menu = menu_bar.addMenu("&Edit")
+    add_menu_action(edit_menu, "Undo", controller.undo, QKeySequence.StandardKey.Undo)
+    add_menu_action(edit_menu, "Redo", controller.redo, QKeySequence.StandardKey.Redo)
 
     clipboard_menu = menu_bar.addMenu("&Clipboard")
     add_menu_action(clipboard_menu, "Copy", controller.copy_image)

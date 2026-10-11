@@ -15,6 +15,7 @@ def open_image(controller):
             cv_image = filesystem_open_image(image_file_name)
             controller.current_img = cv_image
             controller.current_path = image_file_name
+            controller.history.clear()  # a new image starts with empty undo history
             gui_image = convert_opencv_to_gui_image(cv_image)
             controller.window.display_image(gui_image)
         except ValueError as error:
@@ -66,5 +67,6 @@ def new_image(controller):
     cv_image = run_blank_canvas()
     controller.current_img = cv_image
     controller.current_path = None
+    controller.history.clear()
     gui_image = convert_opencv_to_gui_image(cv_image)
     controller.window.display_image(gui_image)
