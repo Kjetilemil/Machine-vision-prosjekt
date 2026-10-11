@@ -39,3 +39,18 @@ def select_object(image, x, y):
         return np.zeros((height, width), np.uint8)  # nothing found
     object_mask = np.where(labels == labels[sy, sx], 255, 0).astype(np.uint8)
     return cv2.resize(object_mask, (width, height), interpolation=cv2.INTER_NEAREST)
+
+def draw_selection(image, mask):
+    """Returns a copy of the image with the selected object tinted blue and outlined in yellow."""
+    preview = image.copy()
+
+    # light blue tint on the object
+    tint = np.full_like(image, (255, 200, 0))  # light blue in BGR
+    tinted = cv2.addWeighted(image, 0.7, tint, 0.3, 0)
+    preview[mask > 0] = tinted[mask > 0]
+
+    # yellow outline around the object
+    contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    thickness = max(2, max(image.shape[:2]) // 300)  # thicker line on bigger images
+    cv2.drawContours(preview, contours, -1, (0, 255, 255), thickness)  # yellow in BGR
+    return preview

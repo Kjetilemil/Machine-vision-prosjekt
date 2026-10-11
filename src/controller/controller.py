@@ -15,7 +15,7 @@ from processing.resize import resize_image
 from processing.zoom import zoom_in as calculate_zoom_in, zoom_out as calculate_zoom_out
 from image.copy import copy_image
 from image.blank_canvas import create_blank_canvas
-from processing.object_selection import select_object
+from processing.object_selection import select_object, draw_selection
 
 
 class Controller:
@@ -208,7 +208,9 @@ class Controller:
             self.selected_mask = mask
             pixels = int((mask > 0).sum())
             self.window.display_status(f"Object selected ({pixels} pixels)")
-            
+            preview = draw_selection(self.current_img, mask)
+            self.window.display_image(convert_opencv_to_gui_image(preview))
+
     # selects the object selection tool
     def select_object_tool(self):
         self.current_tool = "select_object"
