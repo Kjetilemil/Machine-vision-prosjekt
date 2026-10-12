@@ -200,6 +200,13 @@ class ZoomableLabel(QLabel):
 
     # two fingers on the trackpad or the mouse wheel moves the image
     def wheelEvent(self, event):
+        # Ctrl + scroll zooms (Cmd + scroll on Mac), pinch on Windows trackpads also works this way
+        if event.modifiers() & Qt.KeyboardModifier.ControlModifier:
+            # one step on a mouse wheel is 120, which gives 10 % zoom
+            self.pinch_zoomed.emit(1 + event.angleDelta().y() / 1200)
+            event.accept()
+            return
+
         delta = event.pixelDelta()
         if delta.isNull():  # a normal mouse wheel has no pixel delta
             delta = event.angleDelta() / 2

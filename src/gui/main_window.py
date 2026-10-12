@@ -96,10 +96,11 @@ class MainWindow(QMainWindow):
             rows.append((keys, action.statusTip() or action.text()))
 
         # mouse and trackpad controls are not menu actions, so they are added by hand
+        zoom_scroll = "⌘ + scroll" if sys.platform == "darwin" else "Ctrl + scroll"
         rows += [
             ("Arrow keys", "Move the zoomed image"),
             ("Drag / two fingers", "Move the zoomed image"),
-            ("Pinch", "Zoom in and out on the trackpad"),
+            ("Pinch / " + zoom_scroll, "Zoom in and out"),
         ]
 
         table = "".join(
