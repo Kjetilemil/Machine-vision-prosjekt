@@ -56,6 +56,14 @@ class Controller:
     def zoom_in(self):
         self._start_zoom_preview(calculate_zoom_in)
 
+    # zooms in one step right away, used by the keyboard shortcut
+    def zoom_in_directly(self):
+        if self.current_img is None:
+            return
+
+        self.zoom_factor = calculate_zoom_in(self.zoom_factor)
+        self.window.set_zoom_factor(self.zoom_factor)
+
     def zoom_out(self):
         if self.current_img is None:
             return

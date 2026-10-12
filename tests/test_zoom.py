@@ -65,6 +65,27 @@ def test_controller_zoom_out_applies_immediately_without_location_selection():
     assert window.zoom_factors == [0.8]
 
 
+def test_controller_zoom_in_directly_applies_without_location_selection():
+    class Window:
+        def __init__(self):
+            self.zoom_factors = []
+
+        def set_zoom_factor(self, zoom_factor):
+            self.zoom_factors.append(zoom_factor)
+
+        def start_zoom_preview(self, *args):
+            raise AssertionError("Zoom in from the shortcut should not start a selection preview")
+
+    window = Window()
+    controller = Controller(window)
+    controller.current_img = object()
+
+    controller.zoom_in_directly()
+
+    assert controller.zoom_factor == 1.25
+    assert window.zoom_factors == [1.25]
+
+
 def test_zoomed_image_is_centered_when_it_fits_in_view():
     offset = ZoomableLabel._image_offset(100, 80, 90, 0.9)
 

@@ -51,7 +51,7 @@ def create_menubar(window: QMainWindow, controller: Controller):
 
     tools_menu = menu_bar.addMenu("&Tools")
     add_menu_action(tools_menu, "Zoom in", controller.zoom_in)
-    add_menu_action(tools_menu, "Zoom out", controller.zoom_out)
+    add_menu_action(tools_menu, "Zoom out", controller.zoom_out, QKeySequence("Ctrl+-"))
     add_menu_action(tools_menu, "Erase")
     add_menu_action(tools_menu, "Color picker", controller.select_color_tool)
     add_menu_action(tools_menu, "Paint brush")
@@ -65,6 +65,9 @@ def create_menubar(window: QMainWindow, controller: Controller):
     add_menu_action(shapes_menu, "List of shapes")
     add_menu_action(shapes_menu, "Outline color")
     add_menu_action(shapes_menu, "Fill color")
+
+    # Cmd/Ctrl + zooms in right away, so it is not in a menu ("Zoom in" in Tools asks for a point)
+    add_menu_action(window, "Zoom in directly", controller.zoom_in_directly, QKeySequence("Ctrl++"))
 
     color_menu = menu_bar.addMenu("&Colors")
     add_menu_action(color_menu, "Color palette")
