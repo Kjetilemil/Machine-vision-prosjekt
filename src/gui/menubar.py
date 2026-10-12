@@ -24,10 +24,10 @@ def create_menubar(window: QMainWindow, controller: Controller):
     add_menu_action(file_menu, "Properties", controller.show_image_properties)
     add_menu_action(file_menu, "Quit", controller.quit_application)
 
-    # StandardKey gives Cmd+Z / Cmd+Shift+Z on Mac and Ctrl+Z / Ctrl+Y on Windows
+    # Qt turns "Ctrl" into Cmd on Mac, so this is Cmd+Z / Cmd+Y on Mac and Ctrl+Z / Ctrl+Y on Windows
     edit_menu = menu_bar.addMenu("&Edit")
     add_menu_action(edit_menu, "Undo", controller.undo, QKeySequence.StandardKey.Undo)
-    add_menu_action(edit_menu, "Redo", controller.redo, QKeySequence.StandardKey.Redo)
+    add_menu_action(edit_menu, "Redo", controller.redo, QKeySequence("Ctrl+Y"))
 
     clipboard_menu = menu_bar.addMenu("&Clipboard")
     add_menu_action(clipboard_menu, "Copy", controller.copy_image)

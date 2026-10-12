@@ -13,7 +13,6 @@ from PyQt6.QtCore import Qt
 
 from controller.controller import Controller
 from gui.menubar import create_menubar
-from gui.toolbar import create_toolbar
 from gui.zoomable_label import ZoomableLabel
 
 
@@ -87,7 +86,6 @@ def run_main_window():
     window = MainWindow()
     controller = Controller(window)
     create_menubar(window, controller)
-    create_toolbar(window, controller)
     window.open_button.clicked.connect(controller.open_image)
     window.image_label.image_clicked.connect(controller.handle_image_click)
 
