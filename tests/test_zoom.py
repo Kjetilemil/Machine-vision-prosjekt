@@ -5,7 +5,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from controller.controller import Controller
 from gui.zoomable_label import ZoomableLabel
-from processing.zoom import MAX_ZOOM, MIN_ZOOM, zoom_in, zoom_out
+from processing.zoom import MAX_ZOOM, MIN_ZOOM, zoom_by, zoom_in, zoom_out
 
 
 def test_zoom_in_and_out_change_zoom_by_one_step():
@@ -16,6 +16,12 @@ def test_zoom_in_and_out_change_zoom_by_one_step():
 def test_zoom_stays_within_supported_limits():
     assert zoom_in(MAX_ZOOM) == MAX_ZOOM
     assert zoom_out(MIN_ZOOM) == MIN_ZOOM
+
+
+def test_pinch_zoom_changes_zoom_and_stays_within_limits():
+    assert zoom_by(1.0, 1.1) == 1.1
+    assert zoom_by(MAX_ZOOM, 1.1) == MAX_ZOOM
+    assert zoom_by(MIN_ZOOM, 0.9) == MIN_ZOOM
 
 
 def test_controller_waits_for_selected_zoom_location():
@@ -63,6 +69,27 @@ def test_controller_zoom_out_applies_immediately_without_location_selection():
 
     assert controller.zoom_factor == 0.8
     assert window.zoom_factors == [0.8]
+
+
+def test_controller_zoom_in_directly_applies_without_location_selection():
+    class Window:
+        def __init__(self):
+            self.zoom_factors = []
+
+        def set_zoom_factor(self, zoom_factor):
+            self.zoom_factors.append(zoom_factor)
+
+        def start_zoom_preview(self, *args):
+            raise AssertionError("Zoom in from the shortcut should not start a selection preview")
+
+    window = Window()
+    controller = Controller(window)
+    controller.current_img = object()
+
+    controller.zoom_in_directly()
+
+    assert controller.zoom_factor == 1.25
+    assert window.zoom_factors == [1.25]
 
 
 def test_zoomed_image_is_centered_when_it_fits_in_view():

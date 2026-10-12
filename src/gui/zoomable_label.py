@@ -1,10 +1,11 @@
-from PyQt6.QtCore import Qt, pyqtSignal
+from PyQt6.QtCore import Qt, QEvent, pyqtSignal
 from PyQt6.QtGui import QPainter, QPen
 from PyQt6.QtWidgets import QLabel
 
 
 class ZoomableLabel(QLabel):
     image_clicked = pyqtSignal(int, int)
+    pinch_zoomed = pyqtSignal(float)
     def __init__(self, parent=None):
         
         super().__init__(parent)
@@ -15,6 +16,9 @@ class ZoomableLabel(QLabel):
         self._preview_zoom = None
         self._preview_position = None
         self._zoom_callback = None
+        self._press_position = None
+        self._last_drag_position = None
+        self._dragging = False
         
         
 
@@ -27,6 +31,21 @@ class ZoomableLabel(QLabel):
         if image_x is not None:
             self._focus_image = (image_x, image_y)
             self._focus_view = (view_x, view_y)
+        self.update()
+
+    # moves the zoomed image dx, dy pixels (positive = right/down)
+    def pan(self, dx, dy):
+        if self._source_image is None:
+            return
+
+        _, current_rect = self._image_rect(
+            self._zoom_factor, self._focus_image, self._focus_view
+        )
+        # find which part of the image ends up in the middle of the view after moving
+        image_x = (self.width() / 2 - dx - current_rect.x()) / current_rect.width()
+        image_y = (self.height() / 2 - dy - current_rect.y()) / current_rect.height()
+        self._focus_image = (min(max(image_x, 0), 1), min(max(image_y, 0), 1))
+        self._focus_view = (0.5, 0.5)
         self.update()
 
     def start_zoom_preview(self, zoom_factor, callback):
@@ -120,6 +139,21 @@ class ZoomableLabel(QLabel):
             self.update()
             event.accept()
             return
+
+        # dragging with the left button moves the image
+        if self._press_position is not None:
+            position = event.position().toPoint()
+            # small movements still count as a click
+            if not self._dragging and (position - self._press_position).manhattanLength() > 5:
+                self._dragging = True
+                self.setCursor(Qt.CursorShape.ClosedHandCursor)
+
+            if self._dragging:
+                delta = position - self._last_drag_position
+                self.pan(delta.x(), delta.y())
+                self._last_drag_position = position
+            event.accept()
+            return
         super().mouseMoveEvent(event)
 
     def mousePressEvent(self, event):
@@ -137,14 +171,55 @@ class ZoomableLabel(QLabel):
                 event.accept()
                 return
 
-        # checks where the user clicked on the image and emits a signal with the coordinates
-        if self._source_image is not None:
-            click = self._preview_focus(event.position().toPoint())
-            if click is not None:
-                image_position, window_position = click
-                x_part, y_part = image_position
-                x = int(x_part * self._source_image.width())
-                y = int(y_part * self._source_image.height())
-                self.image_clicked.emit(x, y)
+        # remember where the mouse was pressed, the release decides if it was a click or a drag
+        if event.button() == Qt.MouseButton.LeftButton:
+            self._press_position = event.position().toPoint()
+            self._last_drag_position = self._press_position
+            self._dragging = False
 
         super().mousePressEvent(event)
+
+    def mouseReleaseEvent(self, event):
+        if event.button() == Qt.MouseButton.LeftButton and self._press_position is not None:
+            was_click = not self._dragging
+            self._press_position = None
+            self._dragging = False
+            self.unsetCursor()
+
+            # checks where the user clicked on the image and emits a signal with the coordinates
+            if was_click and self._source_image is not None:
+                click = self._preview_focus(event.position().toPoint())
+                if click is not None:
+                    image_position, window_position = click
+                    x_part, y_part = image_position
+                    x = int(x_part * self._source_image.width())
+                    y = int(y_part * self._source_image.height())
+                    self.image_clicked.emit(x, y)
+
+        super().mouseReleaseEvent(event)
+
+    # two fingers on the trackpad or the mouse wheel moves the image
+    def wheelEvent(self, event):
+        # Ctrl + scroll zooms (Cmd + scroll on Mac), pinch on Windows trackpads also works this way
+        if event.modifiers() & Qt.KeyboardModifier.ControlModifier:
+            # one step on a mouse wheel is 120, which gives 10 % zoom
+            self.pinch_zoomed.emit(1 + event.angleDelta().y() / 1200)
+            event.accept()
+            return
+
+        delta = event.pixelDelta()
+        if delta.isNull():  # a normal mouse wheel has no pixel delta
+            delta = event.angleDelta() / 2
+        self.pan(delta.x(), delta.y())
+        event.accept()
+
+    # pinch on the Mac trackpad: spread fingers to zoom in, pinch to zoom out
+    def event(self, event):
+        if (
+            event.type() == QEvent.Type.NativeGesture
+            and event.gestureType() == Qt.NativeGestureType.ZoomNativeGesture
+        ):
+            # value() is a small change, e.g. 0.02 when spreading and -0.02 when pinching
+            self.pinch_zoomed.emit(1 + event.value())
+            return True
+        return super().event(event)

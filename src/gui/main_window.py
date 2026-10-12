@@ -10,6 +10,7 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QKeySequence
 
 from controller.controller import Controller
 from gui.menubar import create_menubar
@@ -54,6 +55,20 @@ class MainWindow(QMainWindow):
         self.image_label.set_image(gui_ready_image)
         self.pages.setCurrentWidget(self.image_label)
 
+    # arrow keys move the zoomed image
+    def keyPressEvent(self, event):
+        step = 50
+        if event.key() == Qt.Key.Key_Left:
+            self.image_label.pan(step, 0)
+        elif event.key() == Qt.Key.Key_Right:
+            self.image_label.pan(-step, 0)
+        elif event.key() == Qt.Key.Key_Up:
+            self.image_label.pan(0, step)
+        elif event.key() == Qt.Key.Key_Down:
+            self.image_label.pan(0, -step)
+        else:
+            super().keyPressEvent(event)
+
     def start_zoom_preview(self, zoom_factor, callback):
         self.image_label.start_zoom_preview(zoom_factor, callback)
 
@@ -63,6 +78,38 @@ class MainWindow(QMainWindow):
     # displays a dialog box with the properties of the image
     def display_text(self, text): 
         QMessageBox.information(self, "Properties", text)
+
+    # shows a window with all keyboard shortcuts, read from the menus so the list is always up to date
+    def show_keyboard_shortcuts(self):
+        actions = []
+        for menu_action in self.menuBar().actions():
+            actions += menu_action.menu().actions()
+        actions += self.actions()  # shortcuts that are not in a menu, like zoom in
+
+        rows = []
+        for action in actions:
+            if action.shortcut().isEmpty():
+                continue
+            keys = ", ".join(
+                key.toString(QKeySequence.SequenceFormat.NativeText) for key in action.shortcuts()
+            )
+            rows.append((keys, action.statusTip() or action.text()))
+
+        # mouse and trackpad controls are not menu actions, so they are added by hand
+        zoom_scroll = "⌘ + scroll" if sys.platform == "darwin" else "Ctrl + scroll"
+        rows += [
+            ("Arrow keys", "Move the zoomed image"),
+            ("Drag / two fingers", "Move the zoomed image"),
+            ("Pinch / " + zoom_scroll, "Zoom in and out"),
+        ]
+
+        table = "".join(
+            f"<tr><td nowrap><b>{keys}</b></td><td nowrap>&nbsp;&nbsp;{text}</td></tr>" for keys, text in rows
+        )
+        box = QMessageBox(self)
+        box.setWindowTitle("Keyboard shortcuts")
+        box.setText(f"<table>{table}</table>")
+        box.exec()
 
     # displays message in the status bar of the gui
     def display_status(self, text):
@@ -88,6 +135,7 @@ def run_main_window():
     create_menubar(window, controller)
     window.open_button.clicked.connect(controller.open_image)
     window.image_label.image_clicked.connect(controller.handle_image_click)
+    window.image_label.pinch_zoomed.connect(controller.zoom_by)
 
     window.show()
     sys.exit(app.exec())
