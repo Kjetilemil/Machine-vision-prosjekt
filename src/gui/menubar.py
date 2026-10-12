@@ -86,3 +86,13 @@ def create_menubar(window: QMainWindow, controller: Controller):
     color_menu = menu_bar.addMenu("&Colors")
     add_menu_action(color_menu, "Color palette")
     add_menu_action(color_menu, "Brush size")
+
+    # Cmd+? on Mac and F1 on Windows
+    help_menu = menu_bar.addMenu("&Help")
+    add_menu_action(
+        help_menu,
+        "Keyboard shortcuts",
+        window.show_keyboard_shortcuts,
+        QKeySequence.StandardKey.HelpContents,
+        "Show all keyboard shortcuts",
+    )

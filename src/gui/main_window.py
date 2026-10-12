@@ -10,6 +10,7 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QKeySequence
 
 from controller.controller import Controller
 from gui.menubar import create_menubar
@@ -77,6 +78,37 @@ class MainWindow(QMainWindow):
     # displays a dialog box with the properties of the image
     def display_text(self, text): 
         QMessageBox.information(self, "Properties", text)
+
+    # shows a window with all keyboard shortcuts, read from the menus so the list is always up to date
+    def show_keyboard_shortcuts(self):
+        actions = []
+        for menu_action in self.menuBar().actions():
+            actions += menu_action.menu().actions()
+        actions += self.actions()  # shortcuts that are not in a menu, like zoom in
+
+        rows = []
+        for action in actions:
+            if action.shortcut().isEmpty():
+                continue
+            keys = ", ".join(
+                key.toString(QKeySequence.SequenceFormat.NativeText) for key in action.shortcuts()
+            )
+            rows.append((keys, action.statusTip() or action.text()))
+
+        # mouse and trackpad controls are not menu actions, so they are added by hand
+        rows += [
+            ("Arrow keys", "Move the zoomed image"),
+            ("Drag / two fingers", "Move the zoomed image"),
+            ("Pinch", "Zoom in and out on the trackpad"),
+        ]
+
+        table = "".join(
+            f"<tr><td nowrap><b>{keys}</b></td><td nowrap>&nbsp;&nbsp;{text}</td></tr>" for keys, text in rows
+        )
+        box = QMessageBox(self)
+        box.setWindowTitle("Keyboard shortcuts")
+        box.setText(f"<table>{table}</table>")
+        box.exec()
 
     # displays message in the status bar of the gui
     def display_status(self, text):
