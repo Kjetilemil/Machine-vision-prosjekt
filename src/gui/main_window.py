@@ -54,6 +54,20 @@ class MainWindow(QMainWindow):
         self.image_label.set_image(gui_ready_image)
         self.pages.setCurrentWidget(self.image_label)
 
+    # arrow keys move the zoomed image
+    def keyPressEvent(self, event):
+        step = 50
+        if event.key() == Qt.Key.Key_Left:
+            self.image_label.pan(step, 0)
+        elif event.key() == Qt.Key.Key_Right:
+            self.image_label.pan(-step, 0)
+        elif event.key() == Qt.Key.Key_Up:
+            self.image_label.pan(0, step)
+        elif event.key() == Qt.Key.Key_Down:
+            self.image_label.pan(0, -step)
+        else:
+            super().keyPressEvent(event)
+
     def start_zoom_preview(self, zoom_factor, callback):
         self.image_label.start_zoom_preview(zoom_factor, callback)
 
