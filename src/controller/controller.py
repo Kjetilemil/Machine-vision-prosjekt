@@ -17,6 +17,7 @@ from image.copy import copy_image
 from image.blank_canvas import create_blank_canvas
 from processing.object_selection import select_object, draw_selection, remove_object
 from processing.object_effects import blur_object, shift_object_color
+from image.history import History
 
 
 class Controller:
@@ -28,6 +29,29 @@ class Controller:
         self.current_tool = None 
         self.copied_image = None
         self.selected_mask = None
+        self.history = History()
+
+    # goes back to the image before the last change
+    def undo(self):
+        previous_image = self.history.undo(self.current_img)
+        if previous_image is None:
+            self.window.display_status("Nothing to undo.")
+            return
+
+        self.current_img = previous_image
+        self.window.display_image(convert_opencv_to_gui_image(self.current_img))
+        self.window.display_status("Undo.")
+
+    # brings back the change that was undone
+    def redo(self):
+        next_image = self.history.redo(self.current_img)
+        if next_image is None:
+            self.window.display_status("Nothing to redo.")
+            return
+
+        self.current_img = next_image
+        self.window.display_image(convert_opencv_to_gui_image(self.current_img))
+        self.window.display_status("Redo.")
 
     def zoom_in(self):
         self._start_zoom_preview(calculate_zoom_in)
@@ -79,6 +103,7 @@ class Controller:
             return
 
         resized_image = resize_image(self.current_img, width, height)
+        self.history.save(self.current_img)
         self.current_img = resized_image
 
         gui_image = convert_opencv_to_gui_image(resized_image)
@@ -96,6 +121,7 @@ class Controller:
             return
     
         processed_image = rotate_right(self.current_img)
+        self.history.save(self.current_img)
         self.current_img = processed_image
     
         gui_image = convert_opencv_to_gui_image(processed_image)
@@ -106,6 +132,7 @@ class Controller:
             return
     
         processed_image = rotate_left(self.current_img)
+        self.history.save(self.current_img)
         self.current_img = processed_image
     
         gui_image = convert_opencv_to_gui_image(processed_image)
@@ -116,6 +143,7 @@ class Controller:
             return
     
         processed_image = flip_horizontal(self.current_img)
+        self.history.save(self.current_img)
         self.current_img = processed_image
     
         gui_image = convert_opencv_to_gui_image(processed_image)
@@ -126,6 +154,7 @@ class Controller:
             return
     
         processed_image = flip_vertical(self.current_img)
+        self.history.save(self.current_img)
         self.current_img = processed_image
     
         gui_image = convert_opencv_to_gui_image(processed_image)
@@ -141,6 +170,7 @@ class Controller:
             self.current_img,
             kernel_size=DEFAULT_GAUSSIAN_KERNEL_SIZE,
         )
+        self.history.save(self.current_img)
         self.current_img = processed_image
 
         gui_image = convert_opencv_to_gui_image(processed_image)
@@ -154,6 +184,7 @@ class Controller:
             self.current_img,
             kernel_size=DEFAULT_SOBEL_KERNEL_SIZE,
         )
+        self.history.save(self.current_img)
         self.current_img = processed_image
 
         gui_image = convert_opencv_to_gui_image(processed_image)
@@ -167,6 +198,7 @@ class Controller:
             self.current_img,
             threshold=DEFAULT_BINARY_THRESHOLD,
         )
+        self.history.save(self.current_img)
         self.current_img = processed_image
 
         gui_image = convert_opencv_to_gui_image(processed_image)
@@ -177,6 +209,7 @@ class Controller:
             return
 
         processed_image = apply_histogram_thresholding(self.current_img)
+        self.history.save(self.current_img)
         self.current_img = processed_image
 
         gui_image = convert_opencv_to_gui_image(processed_image)
@@ -228,6 +261,7 @@ class Controller:
             self.window.display_status("The image has changed, select the object again.")
             return
 
+        self.history.save(self.current_img)
         self.current_img = remove_object(self.current_img, self.selected_mask)
         self.selected_mask = None
         self.window.display_image(convert_opencv_to_gui_image(self.current_img))
@@ -243,6 +277,7 @@ class Controller:
             self.window.display_status("The image has changed, select the object again.")
             return
 
+        self.history.save(self.current_img)
         self.current_img = blur_object(self.current_img, self.selected_mask)
         self.window.display_image(convert_opencv_to_gui_image(self.current_img))
         self.window.display_status("Object blurred.")
@@ -257,6 +292,7 @@ class Controller:
             self.window.display_status("The image has changed, select the object again.")
             return
 
+        self.history.save(self.current_img)
         self.current_img = shift_object_color(self.current_img, self.selected_mask)
         self.window.display_image(convert_opencv_to_gui_image(self.current_img))
         self.window.display_status("Object color changed.")
@@ -274,6 +310,7 @@ class Controller:
         if self.copied_image is None:
             return
 
+        self.history.save(self.current_img)
         self.current_img = copy_image(self.copied_image)
         self.current_path = None
         gui_image = convert_opencv_to_gui_image(self.current_img)
@@ -287,6 +324,7 @@ class Controller:
         self.copied_image = copy_image(self.current_img)
 
         height, width, channels = get_image_properties(self.current_img)
+        self.history.save(self.current_img)
         self.current_img = create_blank_canvas(width, height, (255, 255, 255))
 
         gui_image = convert_opencv_to_gui_image(self.current_img)
