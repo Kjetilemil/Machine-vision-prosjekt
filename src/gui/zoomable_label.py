@@ -1,10 +1,11 @@
-from PyQt6.QtCore import Qt, pyqtSignal
+from PyQt6.QtCore import Qt, QEvent, pyqtSignal
 from PyQt6.QtGui import QPainter, QPen
 from PyQt6.QtWidgets import QLabel
 
 
 class ZoomableLabel(QLabel):
     image_clicked = pyqtSignal(int, int)
+    pinch_zoomed = pyqtSignal(float)
     def __init__(self, parent=None):
         
         super().__init__(parent)
@@ -205,3 +206,13 @@ class ZoomableLabel(QLabel):
         self.pan(delta.x(), delta.y())
         event.accept()
 
+    # pinch on the Mac trackpad: spread fingers to zoom in, pinch to zoom out
+    def event(self, event):
+        if (
+            event.type() == QEvent.Type.NativeGesture
+            and event.gestureType() == Qt.NativeGestureType.ZoomNativeGesture
+        ):
+            # value() is a small change, e.g. 0.02 when spreading and -0.02 when pinching
+            self.pinch_zoomed.emit(1 + event.value())
+            return True
+        return super().event(event)

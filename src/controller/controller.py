@@ -13,6 +13,7 @@ from processing.rotate_flip import rotate_right, rotate_left, flip_horizontal, f
 from image.properties import get_image_properties, get_pixel_color
 from processing.resize import resize_image  
 from processing.zoom import zoom_in as calculate_zoom_in, zoom_out as calculate_zoom_out
+from processing.zoom import zoom_by as calculate_zoom_by
 from image.copy import copy_image
 from image.blank_canvas import create_blank_canvas
 from processing.object_selection import select_object, draw_selection, remove_object
@@ -62,6 +63,14 @@ class Controller:
             return
 
         self.zoom_factor = calculate_zoom_in(self.zoom_factor)
+        self.window.set_zoom_factor(self.zoom_factor)
+
+    # zooms with pinch on the trackpad
+    def zoom_by(self, factor):
+        if self.current_img is None:
+            return
+
+        self.zoom_factor = calculate_zoom_by(self.zoom_factor, factor)
         self.window.set_zoom_factor(self.zoom_factor)
 
     def zoom_out(self):

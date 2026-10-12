@@ -102,6 +102,7 @@ def run_main_window():
     create_menubar(window, controller)
     window.open_button.clicked.connect(controller.open_image)
     window.image_label.image_clicked.connect(controller.handle_image_click)
+    window.image_label.pinch_zoomed.connect(controller.zoom_by)
 
     window.show()
     sys.exit(app.exec())
