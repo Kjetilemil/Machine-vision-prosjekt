@@ -19,7 +19,7 @@ from image.blank_canvas import create_blank_canvas
 from processing.object_selection import select_object, draw_selection, remove_object
 from processing.object_effects import blur_object, shift_object_color
 from image.history import History
-
+from gui.popup import popup_get_integer
 
 class Controller:
     def __init__(self, window):
@@ -183,9 +183,16 @@ class Controller:
         if self.current_img is None:
             return
 
+        kernel_size = popup_get_integer(10, 1, 501, "Enter kernel size between 1 and 501 (must be odd)", self.window)
+        
+        if kernel_size is None:
+            kernel_size = DEFAULT_GAUSSIAN_KERNEL_SIZE
+        elif kernel_size % 2 == 0:
+            kernel_size += 1
+        
         processed_image = apply_gaussian_filter(
             self.current_img,
-            kernel_size=DEFAULT_GAUSSIAN_KERNEL_SIZE,
+            kernel_size=kernel_size,
         )
         self.history.save(self.current_img)
         self.current_img = processed_image
@@ -197,9 +204,14 @@ class Controller:
         if self.current_img is None:
             return
 
+        kernel_size = popup_get_integer(3, 1, 5, "Enter kernel size between 1 and 5", self.window)
+        
+        if kernel_size is None:
+            kernel_size = DEFAULT_SOBEL_KERNEL_SIZE
+
         processed_image = apply_sobel_filter(
             self.current_img,
-            kernel_size=DEFAULT_SOBEL_KERNEL_SIZE,
+            kernel_size=kernel_size,
         )
         self.history.save(self.current_img)
         self.current_img = processed_image
@@ -211,9 +223,14 @@ class Controller:
         if self.current_img is None:
             return
 
+        threshold = popup_get_integer(127, 0, 225, "Enter binary threshold between 0 and 255", self.window)
+                
+        if threshold is None:
+            threshold = DEFAULT_BINARY_THRESHOLD
+
         processed_image = apply_binary_filter(
             self.current_img,
-            threshold=DEFAULT_BINARY_THRESHOLD,
+            threshold=threshold,
         )
         self.history.save(self.current_img)
         self.current_img = processed_image
