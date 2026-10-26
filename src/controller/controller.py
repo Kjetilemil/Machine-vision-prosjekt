@@ -19,7 +19,8 @@ from image.blank_canvas import create_blank_canvas
 from processing.object_selection import select_object, draw_selection, remove_object
 from processing.object_effects import blur_object, shift_object_color
 from image.history import History
-from gui.popup import popup_get_integer
+from gui.popup import popup_get_integer, popup_get_color
+from PyQt6.QtGui import QColor
 
 class Controller:
     def __init__(self, window):
@@ -31,6 +32,9 @@ class Controller:
         self.copied_image = None
         self.selected_mask = None
         self.history = History()
+        self.tool_color = QColor("black")
+        self.shape_color = QColor("black")
+        self.brush_size = 3
 
     # goes back to the image before the last change
     def undo(self):
@@ -364,3 +368,21 @@ class Controller:
         gui_image = convert_opencv_to_gui_image(self.current_img)
         self.window.display_image(gui_image)
         self.window.display_status("Image cut")
+
+    def select_tool_color(self):
+        color = popup_get_color(self.tool_color, "Select tool color", self.window)
+
+        if color is not None:
+            self.tool_color = color
+
+    def select_shape_color(self):
+        color = popup_get_color(self.shape_color, "Select shape color", self.window)
+        
+        if color is not None:
+            self.shape_color = color
+
+    def set_brush_size(self):
+        size = popup_get_integer(3, 1, 1000, "Enter brush size between 1 and 1000", self.window)
+                        
+        if size is not None:
+            self.brush_size = size
