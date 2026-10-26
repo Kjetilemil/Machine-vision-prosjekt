@@ -84,8 +84,9 @@ def create_menubar(window: QMainWindow, controller: Controller):
     add_menu_action(window, "Zoom in", controller.zoom_in_directly, QKeySequence("Ctrl++"), "Zoom in")
 
     color_menu = menu_bar.addMenu("&Colors")
-    add_menu_action(color_menu, "Color palette")
-    add_menu_action(color_menu, "Brush size")
+    add_menu_action(color_menu, "Brush color", controller.select_tool_color)
+    add_menu_action(color_menu, "Shape color", controller.select_shape_color)
+    add_menu_action(color_menu, "Brush size", controller.set_brush_size)
 
     # Cmd+? on Mac and F1 on Windows
     help_menu = menu_bar.addMenu("&Help")
