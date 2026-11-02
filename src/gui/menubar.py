@@ -42,7 +42,7 @@ def create_menubar(window: QMainWindow, controller: Controller):
     add_menu_action(clipboard_menu, "Cut", controller.cut_image, QKeySequence("Ctrl+X"), "Cut the image")
 
     image_menu = menu_bar.addMenu("&Image")
-    add_menu_action(image_menu, "Select Rectangular")
+    add_menu_action(image_menu, "Select Rectangular", controller.select_rectangle_tool, QKeySequence("R"), "Select a rectangular area of the image")
     add_menu_action(image_menu, "Select Free-form")
     add_menu_action(image_menu, "Select polygon")
     add_menu_action(image_menu, "Crop")

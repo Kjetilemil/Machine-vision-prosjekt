@@ -21,6 +21,7 @@ from processing.object_effects import blur_object, shift_object_color
 from image.history import History
 from gui.popup import popup_get_integer, popup_get_color
 from PyQt6.QtGui import QColor
+from processing.rectangle_selection import rectangle_selection
 
 class Controller:
     def __init__(self, window):
@@ -35,6 +36,8 @@ class Controller:
         self.tool_color = QColor("black")
         self.shape_color = QColor("black")
         self.brush_size = 3
+        self.rectangle = None # Store the rectangle selection coordinates
+        self.rectangle_corners = None # Store the rectangle corners for drawing
 
     # goes back to the image before the last change
     def undo(self):
@@ -283,10 +286,37 @@ class Controller:
             preview = draw_selection(self.current_img, mask)
             self.window.display_image(convert_opencv_to_gui_image(preview))
 
+        # rectangle selection tool. User clicks two points to define the rectangle
+        elif self.current_tool == "rectangle_selection":
+            if self.rectangle_corners is None:
+                self.rectangle_corners = (x, y)
+                self.window.display_status("Rectangle selection: click the second corner.")
+                return 
+            #clicked second corner
+            x1, y1 = self.rectangle_corners
+            self.rectangle_corners = None  # Reset for next selection
+            top_left_x = min(x1, x), min(y1, y)
+            bottom_right_x = max(x1, x), max(y1, y)
+            self.rectangle = (top_left_x, bottom_right_x)
+
+            #display the rectangle on the image
+            rectangle_displayed = copy_image(self.current_img)
+            rect_color = (0, 255, 255)  # Yellow color for the rectangle
+            rect_thickness = 2
+            rectangle_displayed = rectangle_selection(rectangle_displayed, top_left_x, bottom_right_x, rect_color, rect_thickness)
+            gui_image = convert_opencv_to_gui_image(rectangle_displayed)
+            self.window.display_image(gui_image)
+            
+
     # selects the object selection tool
     def select_object_tool(self):
         self.current_tool = "select_object"
         self.window.display_status("Select object: click on an object in the image.")
+
+    def select_rectangle_tool(self):
+        self.current_tool = "rectangle_selection"
+        self.rectangle_corners = None  # Reset rectangle corners when selecting the tool
+        self.window.display_status("Rectangle selection tool selected. Click at two points to create the rectangle.")
 
         # removes the selected object and fills the gap with background
     def remove_selected_object(self):
