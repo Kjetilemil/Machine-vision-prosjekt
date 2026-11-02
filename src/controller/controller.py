@@ -19,8 +19,9 @@ from image.blank_canvas import create_blank_canvas
 from processing.object_selection import select_object, draw_selection, remove_object
 from processing.object_effects import blur_object, shift_object_color
 from image.history import History
-from gui.popup import popup_get_integer, popup_get_color
+from gui.popup import popup_get_integer, popup_get_color, popup_get_text
 from PyQt6.QtGui import QColor
+from processing.text import add_text
 
 class Controller:
     def __init__(self, window):
@@ -283,10 +284,30 @@ class Controller:
             preview = draw_selection(self.current_img, mask)
             self.window.display_image(convert_opencv_to_gui_image(preview))
 
+        elif self.current_tool == "text_tool":
+            text = popup_get_text("Enter text to add:", self.window)
+            if text is None:
+                return
+            size = popup_get_integer(3, 1, 100, "Enter text size between 1 and 100", self.window)
+            if size is None:
+                size = 3
+            color = (self.tool_color.blue(), self.tool_color.green(), self.tool_color.red())
+            self.history.save(self.current_img)
+            # needed for the undo. creates a new image with the text added, so that the undo can revert
+            new_image = copy_image(self.current_img)
+            # writes the text on the copy
+            self.current_img = add_text(new_image, text, (x, y), color, size) 
+            self.window.display_image(convert_opencv_to_gui_image(self.current_img))
+
     # selects the object selection tool
     def select_object_tool(self):
         self.current_tool = "select_object"
         self.window.display_status("Select object: click on an object in the image.")
+
+    # selects the text tool
+    def select_text_tool(self):
+        self.current_tool = "text_tool"
+        self.window.display_status("Text tool selected. Click on the image to add text.")
 
         # removes the selected object and fills the gap with background
     def remove_selected_object(self):
