@@ -18,6 +18,7 @@ from image.copy import copy_image
 from image.blank_canvas import create_blank_canvas
 from processing.object_selection import select_object, draw_selection, remove_object
 from processing.object_effects import blur_object, shift_object_color
+from processing.shapes import SHAPES, draw_shape, constrain_end, is_too_small
 from image.history import History
 from gui.popup import popup_get_integer, popup_get_color
 from PyQt6.QtGui import QColor
@@ -35,6 +36,12 @@ class Controller:
         self.tool_color = QColor("black")
         self.shape_color = QColor("black")
         self.brush_size = 3
+        self.shape_names = SHAPES
+        self.selected_shape = None
+        self.shape_start = None
+        # different defaults so the fill and the outline can be told apart
+        self.shape_fill_color = QColor("red")
+        self.shape_outline_color = QColor("blue")
 
     # goes back to the image before the last change
     def undo(self):
@@ -259,6 +266,7 @@ class Controller:
     # selects the color picker tool
     def select_color_tool(self):
         self.current_tool = "color_picker"
+        self.window.set_draw_mode(False)
         self.window.display_status("Color picker tool selected. Click on the image to pick a color.")
 
     def handle_image_click(self, x, y):
@@ -283,9 +291,77 @@ class Controller:
             preview = draw_selection(self.current_img, mask)
             self.window.display_image(convert_opencv_to_gui_image(preview))
 
+    # selects the shape tool, the shape is drawn by dragging on the image
+    def select_shape_tool(self, shape):
+        self.current_tool = "draw_shape"
+        self.selected_shape = shape
+        self.shape_start = None
+        self.window.set_draw_mode(True)
+        self.window.display_status(
+            f"{shape}: drag on the image to draw. Hold Shift for equal sides, Esc to cancel."
+        )
+
+    def start_shape(self, x, y):
+        if self.current_tool != "draw_shape" or self.current_img is None:
+            return
+        self.shape_start = (x, y)
+
+    # shows the shape on a copy of the image while the mouse is moving, nothing is saved yet
+    def preview_shape(self, x, y, keep_proportions):
+        if self.shape_start is None:
+            return
+
+        preview = draw_shape(self.current_img, **self._current_shape_info(x, y, keep_proportions))
+        self.window.display_image(convert_opencv_to_gui_image(preview))
+        end = constrain_end(self.selected_shape, self.shape_start, (x, y), keep_proportions)
+        width = abs(end[0] - self.shape_start[0])
+        height = abs(end[1] - self.shape_start[1])
+        self.window.display_status(f"{self.selected_shape}: {width} x {height} px")
+
+    def finish_shape(self, x, y, keep_proportions):
+        if self.shape_start is None:
+            return
+
+        end = constrain_end(self.selected_shape, self.shape_start, (x, y), keep_proportions)
+        if is_too_small(self.selected_shape, self.shape_start, end):
+            self.cancel_shape()
+            return
+
+        processed_image = draw_shape(self.current_img, **self._current_shape_info(x, y, keep_proportions))
+        self.shape_start = None
+        self.history.save(self.current_img)
+        self.current_img = processed_image
+
+        gui_image = convert_opencv_to_gui_image(processed_image)
+        self.window.display_image(gui_image)
+        self.window.display_status(f"{self.selected_shape} drawn. Drag again to draw another one.")
+
+    # stops the shape that is being drawn and shows the image without it
+    def cancel_shape(self):
+        if self.shape_start is None:
+            return
+
+        self.shape_start = None
+        self.window.display_image(convert_opencv_to_gui_image(self.current_img))
+        self.window.display_status(f"{self.selected_shape}: drag on the image to draw.")
+
+    # everything draw_shape needs for the shape that is being drawn
+    def _current_shape_info(self, x, y, keep_proportions):
+        fill = self.shape_fill_color
+        outline = self.shape_outline_color
+        return {
+            "shape": self.selected_shape,
+            "start": self.shape_start,
+            "end": (x, y),
+            "fill_color": (fill.blue(), fill.green(), fill.red()),
+            "outline_color": (outline.blue(), outline.green(), outline.red()),
+            "keep_proportions": keep_proportions,
+        }
+
     # selects the object selection tool
     def select_object_tool(self):
         self.current_tool = "select_object"
+        self.window.set_draw_mode(False)
         self.window.display_status("Select object: click on an object in the image.")
 
         # removes the selected object and fills the gap with background

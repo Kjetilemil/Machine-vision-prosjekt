@@ -76,12 +76,16 @@ def create_menubar(window: QMainWindow, controller: Controller):
     add_menu_action(tools_menu, "Histogram thresholding", controller.apply_histogram_thresholding)
 
     shapes_menu = menu_bar.addMenu("&Shapes")
-    add_menu_action(shapes_menu, "List of shapes")
+    shape_list_menu = shapes_menu.addMenu("List of shapes")
+    for shape in controller.shape_names:
+        # shape=shape keeps the name of this loop round, checked is sent by the triggered signal
+        add_menu_action(shape_list_menu, shape, lambda checked=False, shape=shape: controller.select_shape_tool(shape))
     add_menu_action(shapes_menu, "Outline color")
     add_menu_action(shapes_menu, "Fill color")
 
     # Cmd/Ctrl + zooms in right away, so it is not in a menu ("Zoom in" in Tools asks for a point)
     add_menu_action(window, "Zoom in", controller.zoom_in_directly, QKeySequence("Ctrl++"), "Zoom in")
+    add_menu_action(window, "Cancel shape", controller.cancel_shape, QKeySequence("Escape"), "Cancel the shape being drawn")
 
     color_menu = menu_bar.addMenu("&Colors")
     add_menu_action(color_menu, "Brush color", controller.select_tool_color)
