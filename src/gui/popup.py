@@ -16,3 +16,13 @@ def popup_get_color(base_color: QColor, text: str, window) -> QColor:
         return color
 
     return None
+
+
+# image text box
+def popup_get_text(text: str, window) -> str:
+    value, ok = QInputDialog.getText(window, "Input", text)
+
+    if ok:
+        return value
+
+    return None
