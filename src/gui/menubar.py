@@ -69,7 +69,7 @@ def create_menubar(window: QMainWindow, controller: Controller):
     add_menu_action(tools_menu, "Erase")
     add_menu_action(tools_menu, "Color picker", controller.select_color_tool, QKeySequence("I"), "Click on the image to see the color")
     add_menu_action(tools_menu, "Paint brush")
-    add_menu_action(tools_menu, "Text box")
+    add_menu_action(tools_menu, "Text box", controller.select_text_tool, QKeySequence("T"), "Click on the image to add text")
     add_menu_action(tools_menu, "Gaussian filter", controller.apply_gaussian_filter)
     add_menu_action(tools_menu, "Sobel filter", controller.apply_sobel_filter)
     add_menu_action(tools_menu, "Binary filter", controller.apply_binary_filter)
