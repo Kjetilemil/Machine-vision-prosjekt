@@ -4,6 +4,9 @@ import numpy as np
 # GrabCut is slow on big images, so we work on a smaller copy
 MAX_SIZE = 600
 
+# how much to blur when splitting the image into a smooth part and a detail part
+DETAIL_BLUR_SIGMA = 3
+
 
 def select_object(image, x, y):
     """Finds the object at pixel (x, y). Returns a mask where 255 = object and 0 = background."""
@@ -66,4 +69,28 @@ def remove_object(image, mask):
     size = max(9, int(3 * scale) | 1)  # | 1 makes it odd
     kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (size, size))
     bigger_mask = cv2.dilate(mask, kernel)
-    return cv2.inpaint(image, bigger_mask, 5, cv2.INPAINT_TELEA)
+    filled = cv2.inpaint(image, bigger_mask, 5, cv2.INPAINT_TELEA)
+    return add_texture(image, filled, bigger_mask, kernel)
+
+def add_texture(image, filled, mask, kernel):
+    """Inpainting makes the hole smooth. This adds back texture (like skin pores) that matches the area around it."""
+    # frequency separation: the details are what is left when we remove the smooth (blurred) part
+    smooth = cv2.GaussianBlur(image, (0, 0), DETAIL_BLUR_SIGMA)
+    details = image.astype(np.float32) - smooth
+
+    # measure how strong the details are in a ring around the hole.
+    # skip the area right next to the hole, the blur smears the object's edge into it
+    near = cv2.dilate(mask, kernel)
+    ring = cv2.dilate(near, kernel) - near
+    if not ring.any():
+        return filled
+    strength = details[ring > 0].std(axis=0)  # one value per color channel
+
+    # random noise with the same strength, same for all channels so it changes brightness, not color
+    height, width = mask.shape[:2]
+    noise = np.random.default_rng().normal(0, 1, (height, width, 1)) * strength
+
+    result = filled.copy()
+    textured = np.clip(filled + noise, 0, 255).astype(np.uint8)
+    result[mask > 0] = textured[mask > 0]
+    return result
