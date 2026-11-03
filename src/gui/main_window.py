@@ -51,6 +51,10 @@ class MainWindow(QMainWindow):
         self.pages.addWidget(self.image_label)
         self.setCentralWidget(self.pages)
 
+        # the status bar is made right away, otherwise it shows up with the first message
+        # and makes the image area smaller, so the image jumps
+        self.statusBar()
+
     def display_image(self, gui_ready_image):
         self.image_label.set_image(gui_ready_image)
         self.pages.setCurrentWidget(self.image_label)
@@ -68,6 +72,10 @@ class MainWindow(QMainWindow):
             self.image_label.pan(0, -step)
         else:
             super().keyPressEvent(event)
+
+    # in draw mode dragging on the image draws instead of moving the image
+    def set_draw_mode(self, enabled):
+        self.image_label.set_draw_mode(enabled)
 
     def start_zoom_preview(self, zoom_factor, callback):
         self.image_label.start_zoom_preview(zoom_factor, callback)
@@ -101,6 +109,8 @@ class MainWindow(QMainWindow):
             ("Arrow keys", "Move the zoomed image"),
             ("Drag / two fingers", "Move the zoomed image"),
             ("Pinch / " + zoom_scroll, "Zoom in and out"),
+            ("Drag (shape tool)", "Draw the shape"),
+            ("Shift + drag", "Draw with equal sides / straight line"),
         ]
 
         table = "".join(
@@ -136,6 +146,9 @@ def run_main_window():
     window.open_button.clicked.connect(controller.open_image)
     window.image_label.image_clicked.connect(controller.handle_image_click)
     window.image_label.pinch_zoomed.connect(controller.zoom_by)
+    window.image_label.drag_started.connect(controller.start_shape)
+    window.image_label.drag_moved.connect(controller.preview_shape)
+    window.image_label.drag_finished.connect(controller.finish_shape)
 
     window.show()
     sys.exit(app.exec())
