@@ -22,6 +22,7 @@ from image.history import History
 from gui.popup import popup_get_integer, popup_get_color
 from PyQt6.QtGui import QColor
 from processing.rectangle_selection import rectangle_selection
+from processing.crop import crop
 
 class Controller:
     def __init__(self, window):
@@ -286,7 +287,7 @@ class Controller:
             preview = draw_selection(self.current_img, mask)
             self.window.display_image(convert_opencv_to_gui_image(preview))
 
-        # rectangle selection tool. User clicks two points to define the rectangle
+        # rectangle selection tool. User clicks two points to define the rectangle (NOTE: HAS TO BE CHANGED IF WE WANT TO DRAW THE RECTANGLE)
         elif self.current_tool == "rectangle_selection":
             if self.rectangle_corners is None:
                 self.rectangle_corners = (x, y)
@@ -317,6 +318,23 @@ class Controller:
         self.current_tool = "rectangle_selection"
         self.rectangle_corners = None  # Reset rectangle corners when selecting the tool
         self.window.display_status("Rectangle selection tool selected. Click at two points to create the rectangle.")
+
+    # crops the image. uses the rectangle defined by the rectangle selection tool
+    def crop_image(self):
+        if self.current_img is None or self.rectangle is None:
+            return
+
+        # corners from the rectangle selection tool
+        top_left, bottom_right = self.rectangle
+        x0, y0 = top_left
+        x1, y1 = bottom_right
+
+        self.history.save(self.current_img)
+        self.current_img = crop(self.current_img, x0, x1, y0, y1)
+        self.rectangle = None  # Reset the rectangle after cropping
+        gui_image = convert_opencv_to_gui_image(self.current_img)
+        self.window.display_image(gui_image)
+
 
         # removes the selected object and fills the gap with background
     def remove_selected_object(self):
