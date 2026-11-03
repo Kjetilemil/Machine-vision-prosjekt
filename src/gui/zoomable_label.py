@@ -6,6 +6,10 @@ from PyQt6.QtWidgets import QLabel
 class ZoomableLabel(QLabel):
     image_clicked = pyqtSignal(int, int)
     pinch_zoomed = pyqtSignal(float)
+    # in draw mode dragging draws instead of moving the image: x, y in the image and if Shift is held
+    drag_started = pyqtSignal(int, int)
+    drag_moved = pyqtSignal(int, int, bool)
+    drag_finished = pyqtSignal(int, int, bool)
     def __init__(self, parent=None):
         
         super().__init__(parent)
@@ -19,8 +23,10 @@ class ZoomableLabel(QLabel):
         self._press_position = None
         self._last_drag_position = None
         self._dragging = False
-        
-        
+        self._draw_mode = False
+        self._drawing = False
+
+
 
     def set_image(self, image):
         self._source_image = image
@@ -48,6 +54,33 @@ class ZoomableLabel(QLabel):
         self._focus_view = (0.5, 0.5)
         self.update()
 
+    def set_draw_mode(self, enabled):
+        self._draw_mode = enabled
+        self._drawing = False
+        self._reset_cursor()
+
+    def _reset_cursor(self):
+        if self._draw_mode:
+            self.setCursor(Qt.CursorShape.CrossCursor)
+        else:
+            self.unsetCursor()
+
+    # turns a position in the widget into a pixel in the image, positions outside are moved to the edge
+    def _image_position(self, position, clamp=False):
+        _, current_rect = self._image_rect(
+            self._zoom_factor, self._focus_image, self._focus_view
+        )
+        if not clamp and not current_rect.contains(position):
+            return None
+
+        x_part = (position.x() - current_rect.x()) / current_rect.width()
+        y_part = (position.y() - current_rect.y()) / current_rect.height()
+        x = int(x_part * self._source_image.width())
+        y = int(y_part * self._source_image.height())
+        x = min(max(x, 0), self._source_image.width() - 1)
+        y = min(max(y, 0), self._source_image.height() - 1)
+        return x, y
+
     def start_zoom_preview(self, zoom_factor, callback):
         self._preview_zoom = zoom_factor
         self._zoom_callback = callback
@@ -61,7 +94,7 @@ class ZoomableLabel(QLabel):
         self._preview_position = None
         self._zoom_callback = None
         self.setMouseTracking(False)
-        self.unsetCursor()
+        self._reset_cursor()
 
     def _image_rect(self, zoom_factor, focus_image, focus_view):
         fitted_image = self._source_image.scaled(
@@ -140,6 +173,12 @@ class ZoomableLabel(QLabel):
             event.accept()
             return
 
+        if self._drawing:
+            x, y = self._image_position(event.position().toPoint(), clamp=True)
+            self.drag_moved.emit(x, y, self._shift_held(event))
+            event.accept()
+            return
+
         # dragging with the left button moves the image
         if self._press_position is not None:
             position = event.position().toPoint()
@@ -171,6 +210,19 @@ class ZoomableLabel(QLabel):
                 event.accept()
                 return
 
+        # in draw mode the drawing starts where the mouse is pressed on the image
+        if (
+            self._draw_mode
+            and event.button() == Qt.MouseButton.LeftButton
+            and self._source_image is not None
+        ):
+            start = self._image_position(event.position().toPoint())
+            if start is not None:
+                self._drawing = True
+                self.drag_started.emit(*start)
+            event.accept()
+            return
+
         # remember where the mouse was pressed, the release decides if it was a click or a drag
         if event.button() == Qt.MouseButton.LeftButton:
             self._press_position = event.position().toPoint()
@@ -180,23 +232,30 @@ class ZoomableLabel(QLabel):
         super().mousePressEvent(event)
 
     def mouseReleaseEvent(self, event):
+        if event.button() == Qt.MouseButton.LeftButton and self._drawing:
+            self._drawing = False
+            x, y = self._image_position(event.position().toPoint(), clamp=True)
+            self.drag_finished.emit(x, y, self._shift_held(event))
+            event.accept()
+            return
+
         if event.button() == Qt.MouseButton.LeftButton and self._press_position is not None:
             was_click = not self._dragging
             self._press_position = None
             self._dragging = False
-            self.unsetCursor()
+            self._reset_cursor()
 
             # checks where the user clicked on the image and emits a signal with the coordinates
             if was_click and self._source_image is not None:
-                click = self._preview_focus(event.position().toPoint())
+                click = self._image_position(event.position().toPoint())
                 if click is not None:
-                    image_position, window_position = click
-                    x_part, y_part = image_position
-                    x = int(x_part * self._source_image.width())
-                    y = int(y_part * self._source_image.height())
-                    self.image_clicked.emit(x, y)
+                    self.image_clicked.emit(*click)
 
         super().mouseReleaseEvent(event)
+
+    @staticmethod
+    def _shift_held(event):
+        return bool(event.modifiers() & Qt.KeyboardModifier.ShiftModifier)
 
     # two fingers on the trackpad or the mouse wheel moves the image
     def wheelEvent(self, event):
