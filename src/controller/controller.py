@@ -48,6 +48,7 @@ class Controller:
         # different defaults so the fill and the outline can be told apart
         self.shape_fill_color = QColor("red")
         self.shape_outline_color = QColor("blue")
+        self.selection_type = None  # used for copying and pasting selected objects. rectangle, polygon, or freehand selection
 
     # goes back to the image before the last change
     def undo(self):
@@ -309,6 +310,7 @@ class Controller:
             top_left_x = min(x1, x), min(y1, y)
             bottom_right_x = max(x1, x), max(y1, y)
             self.rectangle = (top_left_x, bottom_right_x)
+            self.selection_type = "rectangle"
 
             #display the rectangle on the image
             rectangle_displayed = copy_image(self.current_img)
@@ -445,6 +447,13 @@ class Controller:
         self.rectangle_corners = None  # Reset rectangle corners when selecting the tool
         self.window.display_status("Rectangle selection tool selected. Click at two points to create the rectangle.")
 
+    # returns the area of the image defined by the rectangle selection tool - used for copying and pasting selected areas
+    def get_selected_area(self):
+        top_left, bottom_right = self.rectangle
+        x0, y0 = top_left
+        x1, y1 = bottom_right
+        return self.current_img[y0:y1, x0:x1]
+
     # crops the image. uses the rectangle defined by the rectangle selection tool
     def crop_image(self):
         if self.current_img is None or self.rectangle is None:
@@ -459,6 +468,7 @@ class Controller:
         self.history.save(self.current_img)
         self.current_img = crop(self.current_img, x0, x1, y0, y1)
         self.rectangle = None  # Reset the rectangle after cropping
+        self.selection_type = None  # Reset selection type after cropping
         gui_image = convert_opencv_to_gui_image(self.current_img)
         self.window.display_image(gui_image)
 
@@ -515,13 +525,17 @@ class Controller:
         self.window.display_image(convert_opencv_to_gui_image(self.current_img))
         self.window.display_status("Object color changed.")
 
-    # copies the current image
+    # copies the current image or the selected area of the image to the clipboard
     def copy_image(self):
         if self.current_img is None:
             return
 
-        self.copied_image = copy_image(self.current_img)
-        self.window.display_status("Image copied.")
+        if self.selection_type == "rectangle":
+            self.copied_image = copy_image(self.get_selected_area())
+            self.window.display_status("Selected area copied.")
+        else:
+            self.copied_image = copy_image(self.current_img)
+            self.window.display_status("No selection made. Copying the entire image.")
 
     # paste the copied image into the current image
     def paste_image(self):
