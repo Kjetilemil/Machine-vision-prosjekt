@@ -17,7 +17,7 @@ from processing.zoom import zoom_by as calculate_zoom_by
 from image.copy import copy_image
 from image.blank_canvas import create_blank_canvas
 from processing.object_selection import select_object, draw_selection, remove_object
-from processing.object_effects import blur_object, shift_object_color
+from processing.object_effects import blur_object, recolor_object
 from processing.shapes import SHAPES, draw_shape, constrain_end, is_too_small
 from image.history import History
 from gui.popup import popup_get_integer, popup_get_color, popup_get_text
@@ -38,6 +38,7 @@ class Controller:
         self.history = History()
         self.tool_color = QColor("black")
         self.shape_color = QColor("black")
+        self.object_color = QColor("red")
         self.brush_size = 3
         self.rectangle = None # Store the rectangle selection coordinates
         self.rectangle_corners = None # Store the rectangle corners for drawing
@@ -465,8 +466,8 @@ class Controller:
         self.window.display_image(convert_opencv_to_gui_image(self.current_img))
         self.window.display_status("Object blurred.")
 
-    # changes the color of the selected object
-    def shift_selected_object_color(self):
+    # asks for a color and gives it to the selected object
+    def recolor_selected_object(self):
         if self.current_img is None or self.selected_mask is None:
             self.window.display_status("Select an object first.")
             return
@@ -475,8 +476,14 @@ class Controller:
             self.window.display_status("The image has changed, select the object again.")
             return
 
+        color = popup_get_color(self.object_color, "Select object color", self.window)
+        if color is None:
+            return
+        self.object_color = color
+
         self.history.save(self.current_img)
-        self.current_img = shift_object_color(self.current_img, self.selected_mask)
+        bgr = (color.blue(), color.green(), color.red())
+        self.current_img = recolor_object(self.current_img, self.selected_mask, bgr)
         self.window.display_image(convert_opencv_to_gui_image(self.current_img))
         self.window.display_status("Object color changed.")
 
