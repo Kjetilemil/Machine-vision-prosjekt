@@ -46,11 +46,11 @@ def create_menubar(window: QMainWindow, controller: Controller):
     add_menu_action(image_menu, "Select Free-form")
     add_menu_action(image_menu, "Select polygon")
     add_menu_action(image_menu, "Crop", controller.crop_image, QKeySequence("Ctrl+Shift+C"), "Crop the image to the selected area")
-    add_menu_action(image_menu, "Resize", controller.resize_image)
+    add_menu_action(image_menu, "Resize", controller.resize_image, QKeySequence("Ctrl+Shift+R"), "Resize the image")
     add_menu_action(image_menu, "Rotate right 90", controller.rotate_right, QKeySequence("Ctrl+R"), "Rotate the image right")
     add_menu_action(image_menu, "Rotate left 90", controller.rotate_left, QKeySequence("Ctrl+L"), "Rotate the image left")
-    add_menu_action(image_menu, "Flip vertical", controller.flip_vertical)
-    add_menu_action(image_menu, "Flip Horizontal", controller.flip_horizontal)
+    add_menu_action(image_menu, "Flip vertical", controller.flip_vertical, QKeySequence("Ctrl+Shift+V"), "Flip the image vertically")
+    add_menu_action(image_menu, "Flip Horizontal", controller.flip_horizontal, QKeySequence("Ctrl+Shift+H"), "Flip the image horizontally")
     # single keys, like the tool keys in other image editors
     add_menu_action(image_menu, "Select object", controller.select_object_tool, QKeySequence("S"), "Click on an object to select it")
     add_menu_action(
@@ -64,7 +64,7 @@ def create_menubar(window: QMainWindow, controller: Controller):
     add_menu_action(image_menu, "Change object color", controller.shift_selected_object_color, QKeySequence("C"), "Change color of selected object")
 
     tools_menu = menu_bar.addMenu("&Tools")
-    add_menu_action(tools_menu, "Zoom in", controller.zoom_in)
+    add_menu_action(tools_menu, "Zoom in", controller.zoom_in, QKeySequence("Ctrl+="), "Zoom in")
     add_menu_action(tools_menu, "Zoom out", controller.zoom_out, QKeySequence("Ctrl+-"), "Zoom out")
     add_menu_action(tools_menu, "Erase")
     add_menu_action(tools_menu, "Color picker", controller.select_color_tool, QKeySequence("I"), "Click on the image to see the color")
