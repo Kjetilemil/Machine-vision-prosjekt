@@ -111,6 +111,7 @@ class MainWindow(QMainWindow):
             ("Pinch / " + zoom_scroll, "Zoom in and out"),
             ("Drag (shape tool)", "Draw the shape"),
             ("Shift + drag", "Draw with equal sides / straight line"),
+            ("Drag (paint brush)", "Paint with the brush color and size"),
         ]
 
         table = "".join(
@@ -149,6 +150,9 @@ def run_main_window():
     window.image_label.drag_started.connect(controller.start_shape)
     window.image_label.drag_moved.connect(controller.preview_shape)
     window.image_label.drag_finished.connect(controller.finish_shape)
+    window.image_label.drag_started.connect(controller.start_brush)
+    window.image_label.drag_moved.connect(controller.move_brush)
+    window.image_label.drag_finished.connect(controller.finish_brush)
 
     window.show()
     sys.exit(app.exec())
