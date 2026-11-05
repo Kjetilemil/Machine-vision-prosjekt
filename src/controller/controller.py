@@ -448,6 +448,7 @@ class Controller:
     # crops the image. uses the rectangle defined by the rectangle selection tool
     def crop_image(self):
         if self.current_img is None or self.rectangle is None:
+            self.window.display_status("Select an area with the rectangle tool first.")
             return
 
         # corners from the rectangle selection tool
