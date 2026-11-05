@@ -68,7 +68,7 @@ def create_menubar(window: QMainWindow, controller: Controller):
     add_menu_action(tools_menu, "Zoom out", controller.zoom_out, QKeySequence("Ctrl+-"), "Zoom out")
     add_menu_action(tools_menu, "Erase")
     add_menu_action(tools_menu, "Color picker", controller.select_color_tool, QKeySequence("I"), "Click on the image to see the color")
-    add_menu_action(tools_menu, "Paint brush")
+    add_menu_action(tools_menu, "Paint brush", controller.select_brush_tool, QKeySequence("P"), "Drag on the image to paint")
     add_menu_action(tools_menu, "Text box", controller.select_text_tool, QKeySequence("T"), "Click on the image to add text")
     add_menu_action(tools_menu, "Gaussian filter", controller.apply_gaussian_filter)
     add_menu_action(tools_menu, "Sobel filter", controller.apply_sobel_filter)
@@ -80,8 +80,8 @@ def create_menubar(window: QMainWindow, controller: Controller):
     for shape in controller.shape_names:
         # shape=shape keeps the name of this loop round, checked is sent by the triggered signal
         add_menu_action(shape_list_menu, shape, lambda checked=False, shape=shape: controller.select_shape_tool(shape))
-    add_menu_action(shapes_menu, "Outline color")
-    add_menu_action(shapes_menu, "Fill color")
+    add_menu_action(shapes_menu, "Outline color", controller.select_shape_outline_color)
+    add_menu_action(shapes_menu, "Fill color", controller.select_shape_fill_color)
 
     # Cmd/Ctrl + zooms in right away, so it is not in a menu ("Zoom in" in Tools asks for a point)
     add_menu_action(window, "Zoom in", controller.zoom_in_directly, QKeySequence("Ctrl++"), "Zoom in")
@@ -89,7 +89,6 @@ def create_menubar(window: QMainWindow, controller: Controller):
 
     color_menu = menu_bar.addMenu("&Colors")
     add_menu_action(color_menu, "Brush color", controller.select_tool_color)
-    add_menu_action(color_menu, "Shape color", controller.select_shape_color)
     add_menu_action(color_menu, "Brush size", controller.set_brush_size)
 
     # Cmd+? on Mac and F1 on Windows
