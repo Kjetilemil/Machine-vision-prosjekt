@@ -25,6 +25,7 @@ from PyQt6.QtGui import QColor
 from processing.rectangle_selection import rectangle_selection
 from processing.crop import crop
 from processing.text import add_text
+from processing.brush import paint_line
 
 class Controller:
     def __init__(self, window):
@@ -37,8 +38,8 @@ class Controller:
         self.selected_mask = None
         self.history = History()
         self.tool_color = QColor("black")
-        self.shape_color = QColor("black")
         self.brush_size = 3
+        self.brush_last = None # last point of the brush stroke that is being painted
         self.rectangle = None # Store the rectangle selection coordinates
         self.rectangle_corners = None # Store the rectangle corners for drawing
         self.shape_names = SHAPES
@@ -399,6 +400,39 @@ class Controller:
             "keep_proportions": keep_proportions,
         }
 
+    # selects the paint brush, painting is done by dragging on the image
+    def select_brush_tool(self):
+        self.current_tool = "paint_brush"
+        self.window.set_draw_mode(True)
+        self.window.display_status("Paint brush: drag on the image to paint.")
+
+    def start_brush(self, x, y):
+        if self.current_tool != "paint_brush" or self.current_img is None:
+            return
+        # the whole stroke is one undo step. we paint on a copy because the history keeps the old image
+        self.history.save(self.current_img)
+        self.current_img = self.current_img.copy()
+        self.brush_last = (x, y)
+        self._paint_to(x, y)
+
+    def move_brush(self, x, y, keep_proportions):
+        if self.brush_last is None:
+            return
+        self._paint_to(x, y)
+
+    def finish_brush(self, x, y, keep_proportions):
+        if self.brush_last is None:
+            return
+        self._paint_to(x, y)
+        self.brush_last = None
+
+    # paints a line from the last point to (x, y), so fast mouse movements do not leave gaps
+    def _paint_to(self, x, y):
+        color = (self.tool_color.blue(), self.tool_color.green(), self.tool_color.red())
+        paint_line(self.current_img, self.brush_last, (x, y), color, self.brush_size)
+        self.brush_last = (x, y)
+        self.window.display_image(convert_opencv_to_gui_image(self.current_img))
+
     # selects the object selection tool
     def select_object_tool(self):
         self.current_tool = "select_object"
@@ -520,14 +554,20 @@ class Controller:
         if color is not None:
             self.tool_color = color
 
-    def select_shape_color(self):
-        color = popup_get_color(self.shape_color, "Select shape color", self.window)
-        
+    def select_shape_fill_color(self):
+        color = popup_get_color(self.shape_fill_color, "Select shape fill color", self.window)
+
         if color is not None:
-            self.shape_color = color
+            self.shape_fill_color = color
+
+    def select_shape_outline_color(self):
+        color = popup_get_color(self.shape_outline_color, "Select shape outline color", self.window)
+
+        if color is not None:
+            self.shape_outline_color = color
 
     def set_brush_size(self):
-        size = popup_get_integer(3, 1, 1000, "Enter brush size between 1 and 1000", self.window)
+        size = popup_get_integer(self.brush_size, 1, 1000, "Enter brush size between 1 and 1000", self.window)
                         
         if size is not None:
             self.brush_size = size
