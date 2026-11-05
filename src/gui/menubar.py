@@ -61,7 +61,7 @@ def create_menubar(window: QMainWindow, controller: Controller):
         "Remove the selected object",
     )
     add_menu_action(image_menu, "Blur object", controller.blur_selected_object, QKeySequence("B"), "Blur the selected object")
-    add_menu_action(image_menu, "Change object color", controller.shift_selected_object_color, QKeySequence("C"), "Change color of selected object")
+    add_menu_action(image_menu, "Change object color", controller.recolor_selected_object, QKeySequence("C"), "Change color of selected object")
 
     tools_menu = menu_bar.addMenu("&Tools")
     add_menu_action(tools_menu, "Zoom in", controller.zoom_in, QKeySequence("Ctrl+="), "Zoom in")
