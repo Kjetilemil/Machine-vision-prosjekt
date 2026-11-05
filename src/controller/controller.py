@@ -553,11 +553,17 @@ class Controller:
         if self.current_img is None:
             return
 
-        self.copied_image = copy_image(self.current_img)
-
-        height, width, channels = get_image_properties(self.current_img)
+        self.copy_image()  # Copy the current image or selected area to the clipboard
         self.history.save(self.current_img)
-        self.current_img = create_blank_canvas(width, height, (255, 255, 255))
+
+        if self.selection_type == "rectangle":
+            self.current_img = copy_image(self.current_img) # Copy the current image for undo purposes
+            location = self.get_selected_area()
+            location[:] = 255  # Fill the selected area with white
+
+        else:
+            height, width, channels = get_image_properties(self.current_img)
+            self.current_img = create_blank_canvas(width, height, (255, 255, 255))
 
         gui_image = convert_opencv_to_gui_image(self.current_img)
         self.window.display_image(gui_image)
