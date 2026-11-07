@@ -1,3 +1,5 @@
+import time
+
 from image.convert_image_for_gui import convert_opencv_to_gui_image
 from processing.object_selection import draw_selection
 from processing.polygon_selection import polygon_mask, draw_selection_line, is_close_to
@@ -22,6 +24,13 @@ def run_move_freeform(controller, x, y):
     if controller.current_tool != "freeform_selection" or not controller.selection_points:
         return
     controller.selection_points.append((x, y))
+
+    # redrawing a big image is slow, so the preview is only updated about 20 times per second
+    now = time.monotonic()
+    if now - getattr(controller, "last_preview_time", 0) < 0.05:
+        return
+    controller.last_preview_time = now
+
     preview = draw_selection_line(controller.current_img, controller.selection_points)
     controller.window.display_image(convert_opencv_to_gui_image(preview))
 
