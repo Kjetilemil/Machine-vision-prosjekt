@@ -43,8 +43,8 @@ def create_menubar(window: QMainWindow, controller: Controller):
 
     image_menu = menu_bar.addMenu("&Image")
     add_menu_action(image_menu, "Select Rectangular", controller.select_rectangle_tool, QKeySequence("R"), "Select a rectangular area of the image")
-    add_menu_action(image_menu, "Select Free-form")
-    add_menu_action(image_menu, "Select polygon")
+    add_menu_action(image_menu, "Select Free-form", controller.select_freeform_tool, QKeySequence("F"), "Draw around an area to select it")
+    add_menu_action(image_menu, "Select polygon", controller.select_polygon_tool, QKeySequence("G"), "Click corners to select an area")
     add_menu_action(image_menu, "Crop", controller.crop_image, QKeySequence("Ctrl+Shift+C"), "Crop the image to the selected area")
     add_menu_action(image_menu, "Resize", controller.resize_image, QKeySequence("Ctrl+Shift+R"), "Resize the image")
     add_menu_action(image_menu, "Rotate right 90", controller.rotate_right, QKeySequence("Ctrl+R"), "Rotate the image right")
