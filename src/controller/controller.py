@@ -8,7 +8,7 @@ from controller.object_controller import run_remove_selected_object, run_blur_se
 from controller.clipboard_controller import run_copy_image, run_paste_image, run_cut_image
 from controller.tool_controller import run_handle_image_click, run_select_color_tool, run_select_object_tool, run_select_rectangle_tool, run_select_text_tool
 from controller.shape_controller import run_select_shape_tool, run_start_shape, run_preview_shape, run_finish_shape, run_cancel_shape, run_select_shape_fill_color, run_select_shape_outline_color
-from controller.brush_controller import run_select_brush_tool, run_start_brush, run_move_brush, run_finish_brush, run_select_tool_color, run_set_brush_size
+from controller.brush_controller import run_select_brush_tool, run_start_brush, run_move_brush, run_finish_brush, run_select_tool_color, run_set_brush_size, run_select_erase_tool
 from controller.undo_redo_controller import run_undo, run_redo
 from controller.zoom_controller import run_zoom_in, run_zoom_in_directly, run_zoom_by, run_zoom_out
 from processing.shapes import SHAPES
@@ -180,20 +180,9 @@ class Controller:
     def zoom_out(self):
         run_zoom_out(self)
 
-    
-
-    
-
-
-
-
-
-
-
-
-
-
-
+    def select_erase_tool(self):
+        run_select_erase_tool(self)
+        
 
     # returns the area of the image defined by the rectangle selection tool - used for copying and pasting selected areas
     def get_selected_area(self):
@@ -201,5 +190,3 @@ class Controller:
         x0, y0 = top_left
         x1, y1 = bottom_right
         return self.current_img[y0:y1, x0:x1]
-
-
