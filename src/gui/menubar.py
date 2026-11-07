@@ -66,7 +66,7 @@ def create_menubar(window: QMainWindow, controller: Controller):
     tools_menu = menu_bar.addMenu("&Tools")
     add_menu_action(tools_menu, "Zoom in", controller.zoom_in, QKeySequence("Ctrl+="), "Zoom in")
     add_menu_action(tools_menu, "Zoom out", controller.zoom_out, QKeySequence("Ctrl+-"), "Zoom out")
-    add_menu_action(tools_menu, "Erase")
+    add_menu_action(tools_menu, "Erase", controller.select_erase_tool, QKeySequence("E"), "Drag on the image to erase")
     add_menu_action(tools_menu, "Color picker", controller.select_color_tool, QKeySequence("I"), "Click on the image to see the color")
     add_menu_action(tools_menu, "Paint brush", controller.select_brush_tool, QKeySequence("P"), "Drag on the image to paint")
     add_menu_action(tools_menu, "Text box", controller.select_text_tool, QKeySequence("T"), "Click on the image to add text")

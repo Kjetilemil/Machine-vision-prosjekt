@@ -26,6 +26,7 @@ from processing.rectangle_selection import rectangle_selection
 from processing.crop import crop
 from processing.text import add_text
 from processing.brush import paint_line
+from processing.erase import erase_line
 
 class Controller:
     def __init__(self, window):
@@ -409,8 +410,14 @@ class Controller:
         self.window.set_draw_mode(True)
         self.window.display_status("Paint brush: drag on the image to paint.")
 
+    # selects the eraser, it works like the paint brush but paints white
+    def select_erase_tool(self):
+        self.current_tool = "erase"
+        self.window.set_draw_mode(True)
+        self.window.display_status("Erase: drag on the image to erase.")
+
     def start_brush(self, x, y):
-        if self.current_tool != "paint_brush" or self.current_img is None:
+        if self.current_tool not in ("paint_brush", "erase") or self.current_img is None:
             return
         # the whole stroke is one undo step. we paint on a copy because the history keeps the old image
         self.history.save(self.current_img)
@@ -431,8 +438,11 @@ class Controller:
 
     # paints a line from the last point to (x, y), so fast mouse movements do not leave gaps
     def _paint_to(self, x, y):
-        color = (self.tool_color.blue(), self.tool_color.green(), self.tool_color.red())
-        paint_line(self.current_img, self.brush_last, (x, y), color, self.brush_size)
+        if self.current_tool == "erase":
+            erase_line(self.current_img, self.brush_last, (x, y), self.brush_size)
+        else:
+            color = (self.tool_color.blue(), self.tool_color.green(), self.tool_color.red())
+            paint_line(self.current_img, self.brush_last, (x, y), color, self.brush_size)
         self.brush_last = (x, y)
         self.window.display_image(convert_opencv_to_gui_image(self.current_img))
 
