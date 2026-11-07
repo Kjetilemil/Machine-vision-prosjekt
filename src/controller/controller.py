@@ -12,7 +12,10 @@ from controller.brush_controller import run_select_brush_tool, run_start_brush, 
 from controller.undo_redo_controller import run_undo, run_redo
 from controller.zoom_controller import run_zoom_in, run_zoom_in_directly, run_zoom_by, run_zoom_out
 from processing.shapes import SHAPES
-
+from controller.selection_controller import (
+    run_select_freeform_tool, run_start_freeform, run_move_freeform, run_finish_freeform,
+    run_select_polygon_tool, run_polygon_click,
+)
 
 class Controller:
     def __init__(self, window):
@@ -36,6 +39,7 @@ class Controller:
         # different defaults so the fill and the outline can be told apart
         self.shape_fill_color = QColor("red")
         self.shape_outline_color = QColor("blue")
+        self.selection_points = []  # the points of the free-form or polygon selection being made
         self.selection_type = None  # used for copying and pasting selected objects. rectangle, polygon, or freehand selection
 
 
@@ -183,6 +187,25 @@ class Controller:
     def select_erase_tool(self):
         run_select_erase_tool(self)
         
+
+    # free-form and polygon selection, the code is in selection_controller.py
+    def select_freeform_tool(self):
+        run_select_freeform_tool(self)
+
+    def start_freeform(self, x, y):
+        run_start_freeform(self, x, y)
+
+    def move_freeform(self, x, y, keep_proportions):
+        run_move_freeform(self, x, y)
+
+    def finish_freeform(self, x, y, keep_proportions):
+        run_finish_freeform(self, x, y)
+
+    def select_polygon_tool(self):
+        run_select_polygon_tool(self)
+
+    def polygon_click(self, x, y):
+        run_polygon_click(self, x, y)
 
     # returns the area of the image defined by the rectangle selection tool - used for copying and pasting selected areas
     def get_selected_area(self):

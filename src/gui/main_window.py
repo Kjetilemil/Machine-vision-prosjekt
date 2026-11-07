@@ -153,6 +153,10 @@ def run_main_window():
     window.image_label.drag_started.connect(controller.start_brush)
     window.image_label.drag_moved.connect(controller.move_brush)
     window.image_label.drag_finished.connect(controller.finish_brush)
+    window.image_label.drag_started.connect(controller.start_freeform)
+    window.image_label.drag_moved.connect(controller.move_freeform)
+    window.image_label.drag_finished.connect(controller.finish_freeform)
+    window.image_label.image_clicked.connect(controller.polygon_click)
 
     window.show()
     sys.exit(app.exec())
