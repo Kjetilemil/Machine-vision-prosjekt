@@ -5,7 +5,7 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from controller import controller as controller_module
+from controller import transform_controller, undo_redo_controller
 from controller.controller import Controller
 from image.history import History, MAX_HISTORY
 
@@ -46,7 +46,8 @@ def test_history_only_keeps_the_last_steps():
 
 def test_controller_undo_brings_back_the_image_before_rotate(monkeypatch):
     # skip the conversion to a Qt image, it needs a running Qt app
-    monkeypatch.setattr(controller_module, "convert_opencv_to_gui_image", lambda image: image)
+    monkeypatch.setattr(transform_controller, "convert_opencv_to_gui_image", lambda image: image)
+    monkeypatch.setattr(undo_redo_controller, "convert_opencv_to_gui_image", lambda image: image)
 
     class Window:
         def display_image(self, image):

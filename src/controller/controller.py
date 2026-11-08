@@ -4,12 +4,12 @@ from image.history import History
 from controller.file_controller import open_image, save_image, save_image_as, new_image, run_show_image_properties
 from controller.filter_controller import run_apply_gaussian_filter, run_apply_sobel_filter, run_apply_binary_filter, run_apply_histogram_thresholding
 from controller.transform_controller import run_rotate_right, run_rotate_left, run_flip_horizontal, run_flip_vertical, run_resize_image, run_crop_image
-from controller.object_controller import run_remove_selected_object, run_blur_selected_object, run_recolor_selected_object
+from controller.object_controller import run_remove_selected_object, run_blur_selected_object, run_recolor_selected_object, run_select_move_tool, run_start_move, run_preview_move, run_finish_move
 from controller.clipboard_controller import (
     run_copy_image, run_paste_image, run_cut_image,
     run_start_paste_drag, run_move_paste_drag, run_finish_paste_drag, run_finish_paste, run_cancel_paste,
 )
-from controller.tool_controller import run_handle_image_click, run_select_color_tool, run_select_object_tool, run_select_rectangle_tool, run_select_text_tool
+from controller.tool_controller import run_handle_image_click, run_cancel_tool, run_select_color_tool, run_select_object_tool, run_select_rectangle_tool, run_select_text_tool
 from controller.shape_controller import run_select_shape_tool, run_start_shape, run_preview_shape, run_finish_shape, run_cancel_shape, run_select_shape_fill_color, run_select_shape_outline_color
 from controller.brush_controller import run_select_brush_tool, run_start_brush, run_move_brush, run_finish_brush, run_select_tool_color, run_set_brush_size, run_select_erase_tool
 from controller.undo_redo_controller import run_undo, run_redo
@@ -32,6 +32,8 @@ class Controller:
         self.floating_paste = None  # the pasted piece while it can still be moved, see clipboard_controller.py
         self.paste_grab = None  # where on the pasted piece the mouse grabbed it
         self.selected_mask = None
+        self.move_start = None  # where the drag that moves an object started
+        self.move_background = None  # the image the object is placed on while it is moved
         self.history = History()
         self.tool_color = QColor("black")
         self.object_color = QColor("red")
@@ -110,6 +112,22 @@ class Controller:
     def recolor_selected_object(self):
         run_recolor_selected_object(self)
 
+    # move and duplicate object, the code is in object_controller.py
+    def select_move_object_tool(self):
+        run_select_move_tool(self, "move_object")
+
+    def select_duplicate_object_tool(self):
+        run_select_move_tool(self, "duplicate_object")
+
+    def start_move(self, x, y):
+        run_start_move(self, x, y)
+
+    def preview_move(self, x, y, keep_proportions):
+        run_preview_move(self, x, y)
+
+    def finish_move(self, x, y, keep_proportions):
+        run_finish_move(self, x, y)
+
     def copy_image(self):
         run_copy_image(self)
 
@@ -131,10 +149,10 @@ class Controller:
     def finish_paste(self):
         run_finish_paste(self)
 
-    # Esc stops what is being done right now: a shape that is being drawn or a paste
+    # Esc takes back a paste that is still being moved, otherwise it works like cancel_tool
     def cancel(self):
-        run_cancel_shape(self)
-        run_cancel_paste(self)
+        if not run_cancel_paste(self):
+            run_cancel_tool(self)
 
     def handle_image_click(self, x, y):
         run_handle_image_click(self, x, y)
@@ -162,6 +180,9 @@ class Controller:
 
     def cancel_shape(self):
         run_cancel_shape(self)
+
+    def cancel_tool(self):
+        run_cancel_tool(self)
 
     def select_shape_fill_color(self):
         run_select_shape_fill_color(self)

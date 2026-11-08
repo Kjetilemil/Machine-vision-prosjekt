@@ -96,10 +96,10 @@ def run_finish_paste(controller):
         controller.window.display_image(convert_opencv_to_gui_image(controller.current_img))
         controller.window.display_status("Pasted image placed.")
 
-# takes the paste back (Esc), Redo brings it back
+# takes the paste back (Esc), Redo brings it back. returns False if there was no paste to take back
 def run_cancel_paste(controller):
         if not _can_move_paste(controller):
-            return
+            return False
 
         controller.current_img = controller.history.undo(controller.current_img)
         controller.floating_paste = None
@@ -108,6 +108,7 @@ def run_cancel_paste(controller):
         controller.window.set_draw_mode(False)
         controller.window.display_image(convert_opencv_to_gui_image(controller.current_img))
         controller.window.display_status("Paste cancelled.")
+        return True
 
 # the piece can be moved as long as the paste tool is used and nothing else has changed the image
 def _can_move_paste(controller):

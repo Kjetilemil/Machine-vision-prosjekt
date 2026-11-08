@@ -120,5 +120,54 @@ def test_draw_paste_frame_does_not_change_the_image():
     assert not np.array_equal(preview, image)
 
 
+class Window:
+    def set_draw_mode(self, enabled):
+        self.draw_mode = enabled
+
+    def cancel_zoom_preview(self):
+        pass
+
+    def display_image(self, image):
+        self.shown = image
+
+    def display_status(self, text):
+        self.status = text
+
+
+def make_controller(monkeypatch):
+    from controller import clipboard_controller, tool_controller
+    from controller.controller import Controller
+
+    # skip the conversion to a Qt image, it needs a running Qt app
+    monkeypatch.setattr(clipboard_controller, "convert_opencv_to_gui_image", lambda image: image)
+    monkeypatch.setattr(tool_controller, "convert_opencv_to_gui_image", lambda image: image)
+    controller = Controller(Window())
+    controller.current_img = make_image()
+    return controller
+
+
+def test_escape_takes_back_a_paste_that_is_being_moved(monkeypatch):
+    controller = make_controller(monkeypatch)
+    image_before = controller.current_img
+    controller.copy_image()
+    controller.paste_image()
+
+    controller.cancel()
+
+    assert controller.current_img is image_before
+    assert controller.current_tool is None
+
+
+def test_escape_without_paste_leaves_the_tool(monkeypatch):
+    controller = make_controller(monkeypatch)
+    controller.current_tool = "select_object"
+    controller.selected_mask = np.full((20, 30), 255, dtype=np.uint8)
+
+    controller.cancel()
+
+    assert controller.current_tool is None
+    assert controller.selected_mask is None
+
+
 def test_selection_position():
     assert selection_position(make_triangle_mask()) == (5, 2)

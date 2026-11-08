@@ -89,6 +89,10 @@ class ZoomableLabel(QLabel):
         self.setCursor(Qt.CursorShape.CrossCursor)
         self.update()
 
+    def cancel_zoom_preview(self):
+        self._finish_zoom_preview()
+        self.update()
+
     def _finish_zoom_preview(self):
         self._preview_zoom = None
         self._preview_position = None
