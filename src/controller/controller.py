@@ -21,6 +21,18 @@ from controller.selection_controller import (
 )
 
 class Controller:
+    # current_tool is a property, so the window can show the tool name every time it changes.
+    @property
+    def current_tool(self):
+        return self._current_tool
+
+    @current_tool.setter
+    def current_tool(self, tool):
+        self._current_tool = tool
+        show_tool = getattr(self.window, "show_tool", None)
+        if show_tool is not None:
+            show_tool(tool)
+
     def __init__(self, window):
         self.window = window
         self.current_img = None

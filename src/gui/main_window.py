@@ -4,6 +4,7 @@ from PyQt6.QtWidgets import (
     QMainWindow,
     QMessageBox,
     QInputDialog,
+    QLabel,
     QPushButton,
     QStackedWidget,
     QVBoxLayout,
@@ -15,31 +16,48 @@ from PyQt6.QtGui import QKeySequence
 from controller.controller import Controller
 from gui.menubar import create_menubar
 from gui.zoomable_label import ZoomableLabel
+from gui.style import apply_theme
 
+TOOL_NAMES = {
+    "color_picker": "Color picker",
+    "select_object": "Select object",
+    "rectangle_selection": "Rectangle",
+    "freeform_selection": "Free-form",
+    "polygon_selection": "Polygon",
+    "text_tool": "Text",
+    "draw_shape": "Shape",
+    "paint_brush": "Paint brush",
+    "erase": "Erase",
+    "move_object": "Move object",
+    "duplicate_object": "Duplicate object",
+    "move_paste": "Place pasted image",
+}
 
 # initializes the gui
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Image editor")
+        self.setWindowTitle("Item Manipulation")
         self.resize(900, 700)
         self.setStyleSheet("""
             QMainWindow { background-color: #d3d3d3; }
             QMenuBar { background-color: #666666; }
         """)
 
-        # start screen with a big button, shown until an image is opened
         self.open_button = QPushButton("Open image")
-        self.open_button.setStyleSheet("""
-            QPushButton {
-                font-size: 18px; padding: 12px 32px; border-radius: 6px;
-                background-color: #666666; color: white;
-            }
-            QPushButton:hover { background-color: #555555; }
-        """)
+        title = QLabel("Item Manipulation")
+        title.setObjectName("title")
+        self.open_button = QPushButton("Open image")
+        self.open_button.setObjectName("openButton")
+        self.open_button.setCursor(Qt.CursorShape.PointingHandCursor)
+
         start_screen = QWidget()
         start_layout = QVBoxLayout(start_screen)
+        start_layout.addStretch()
+        start_layout.addWidget(title, alignment=Qt.AlignmentFlag.AlignCenter)
+        start_layout.addSpacing(24)
         start_layout.addWidget(self.open_button, alignment=Qt.AlignmentFlag.AlignCenter)
+        start_layout.addStretch()
 
         # creates space in the gui for the imaage
         self.image_label = ZoomableLabel(self)
@@ -54,6 +72,12 @@ class MainWindow(QMainWindow):
         # the status bar is made right away, otherwise it shows up with the first message
         # and makes the image area smaller, so the image jumps
         self.statusBar()
+
+        # shows which tool is chosen, in the right corner of the status bar
+        self.tool_label = QLabel()
+        self.tool_label.setObjectName("toolChip")
+        self.tool_label.hide()
+        self.statusBar().addPermanentWidget(self.tool_label)
 
     def display_image(self, gui_ready_image):
         self.image_label.set_image(gui_ready_image)
@@ -126,6 +150,14 @@ class MainWindow(QMainWindow):
         box.setText(f"<table>{table}</table>")
         box.exec()
 
+    # shows the name of the chosen tool in the status bar, None hides it
+    def show_tool(self, tool):
+        if tool is None:
+            self.tool_label.hide()
+            return
+        self.tool_label.setText("●  " + TOOL_NAMES.get(tool, tool))
+        self.tool_label.show()
+
     # displays message in the status bar of the gui
     def display_status(self, text):
         self.statusBar().showMessage(text)
@@ -144,6 +176,7 @@ class MainWindow(QMainWindow):
 
 def run_main_window():
     app = QApplication(sys.argv)
+    apply_theme(app, "dark")
 
     window = MainWindow()
     controller = Controller(window)
