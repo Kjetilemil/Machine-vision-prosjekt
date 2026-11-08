@@ -4,6 +4,7 @@ from PyQt6.QtWidgets import QFileDialog
 from image.filesystem import filesystem_open_image, filesystem_save_image
 from image.convert_image_for_gui import convert_opencv_to_gui_image
 from image.blank_canvas import run_blank_canvas
+from image.properties import get_image_properties
 
 
 # function to access files and select image, processes the image and displays it  
@@ -70,3 +71,12 @@ def new_image(controller):
     controller.history.clear()
     gui_image = convert_opencv_to_gui_image(cv_image)
     controller.window.display_image(gui_image)
+
+
+def run_show_image_properties(controller):
+    if controller.current_img is None:
+        return None
+
+    height, width, channels = get_image_properties(controller.current_img)
+    text = f"Height: {height}, Width: {width}, Channels: {channels}"
+    controller.window.display_text(text)
