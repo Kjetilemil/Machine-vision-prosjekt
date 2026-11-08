@@ -5,7 +5,10 @@ from controller.file_controller import open_image, save_image, save_image_as, ne
 from controller.filter_controller import run_apply_gaussian_filter, run_apply_sobel_filter, run_apply_binary_filter, run_apply_histogram_thresholding
 from controller.transform_controller import run_rotate_right, run_rotate_left, run_flip_horizontal, run_flip_vertical, run_resize_image, run_crop_image
 from controller.object_controller import run_remove_selected_object, run_blur_selected_object, run_recolor_selected_object
-from controller.clipboard_controller import run_copy_image, run_paste_image, run_cut_image
+from controller.clipboard_controller import (
+    run_copy_image, run_paste_image, run_cut_image,
+    run_start_paste_drag, run_move_paste_drag, run_finish_paste_drag, run_finish_paste, run_cancel_paste,
+)
 from controller.tool_controller import run_handle_image_click, run_select_color_tool, run_select_object_tool, run_select_rectangle_tool, run_select_text_tool
 from controller.shape_controller import run_select_shape_tool, run_start_shape, run_preview_shape, run_finish_shape, run_cancel_shape, run_select_shape_fill_color, run_select_shape_outline_color
 from controller.brush_controller import run_select_brush_tool, run_start_brush, run_move_brush, run_finish_brush, run_select_tool_color, run_set_brush_size, run_select_erase_tool
@@ -25,6 +28,9 @@ class Controller:
         self.zoom_factor = 1.0
         self.current_tool = None 
         self.copied_image = None
+        self.copied_mask = None  # which pixels of the copied image belong to the selection
+        self.floating_paste = None  # the pasted piece while it can still be moved, see clipboard_controller.py
+        self.paste_grab = None  # where on the pasted piece the mouse grabbed it
         self.selected_mask = None
         self.history = History()
         self.tool_color = QColor("black")
@@ -112,6 +118,23 @@ class Controller:
 
     def cut_image(self):
         run_cut_image(self)
+
+    def start_paste_drag(self, x, y):
+        run_start_paste_drag(self, x, y)
+
+    def move_paste_drag(self, x, y, keep_proportions):
+        run_move_paste_drag(self, x, y)
+
+    def finish_paste_drag(self, x, y, keep_proportions):
+        run_finish_paste_drag(self, x, y)
+
+    def finish_paste(self):
+        run_finish_paste(self)
+
+    # Esc stops what is being done right now: a shape that is being drawn or a paste
+    def cancel(self):
+        run_cancel_shape(self)
+        run_cancel_paste(self)
 
     def handle_image_click(self, x, y):
         run_handle_image_click(self, x, y)

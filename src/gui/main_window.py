@@ -112,6 +112,7 @@ class MainWindow(QMainWindow):
             ("Drag (shape tool)", "Draw the shape"),
             ("Shift + drag", "Draw with equal sides / straight line"),
             ("Drag (paint brush)", "Paint with the brush color and size"),
+            ("Drag (after paste)", "Move the pasted image"),
         ]
 
         table = "".join(
@@ -157,6 +158,9 @@ def run_main_window():
     window.image_label.drag_moved.connect(controller.move_freeform)
     window.image_label.drag_finished.connect(controller.finish_freeform)
     window.image_label.image_clicked.connect(controller.polygon_click)
+    window.image_label.drag_started.connect(controller.start_paste_drag)
+    window.image_label.drag_moved.connect(controller.move_paste_drag)
+    window.image_label.drag_finished.connect(controller.finish_paste_drag)
 
     window.show()
     sys.exit(app.exec())

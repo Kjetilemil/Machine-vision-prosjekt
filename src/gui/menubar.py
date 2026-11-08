@@ -85,7 +85,9 @@ def create_menubar(window: QMainWindow, controller: Controller):
 
     # Cmd/Ctrl + zooms in right away, so it is not in a menu ("Zoom in" in Tools asks for a point)
     add_menu_action(window, "Zoom in", controller.zoom_in_directly, QKeySequence("Ctrl++"), "Zoom in")
-    add_menu_action(window, "Cancel shape", controller.cancel_shape, QKeySequence("Escape"), "Cancel the shape being drawn")
+    # one Escape action for everything, two actions with the same key would block each other
+    add_menu_action(window, "Cancel", controller.cancel, QKeySequence("Escape"), "Cancel the shape being drawn or the paste")
+    add_menu_action(window, "Place pasted image", controller.finish_paste, [QKeySequence("Return"), QKeySequence("Enter")], "Place the pasted image")
 
     color_menu = menu_bar.addMenu("&Colors")
     add_menu_action(color_menu, "Brush color", controller.select_tool_color)
