@@ -62,6 +62,8 @@ def create_menubar(window: QMainWindow, controller: Controller):
     )
     add_menu_action(image_menu, "Blur object", controller.blur_selected_object, QKeySequence("B"), "Blur the selected object")
     add_menu_action(image_menu, "Change object color", controller.recolor_selected_object, QKeySequence("C"), "Change color of selected object")
+    add_menu_action(image_menu, "Move object", controller.select_move_object_tool, QKeySequence("M"), "Drag to move the selected object")
+    add_menu_action(image_menu, "Duplicate object", controller.select_duplicate_object_tool, QKeySequence("D"), "Drag to place a copy of the selected object")
 
     tools_menu = menu_bar.addMenu("&Tools")
     add_menu_action(tools_menu, "Zoom in", controller.zoom_in, QKeySequence("Ctrl+="), "Zoom in")
@@ -85,7 +87,7 @@ def create_menubar(window: QMainWindow, controller: Controller):
 
     # Cmd/Ctrl + zooms in right away, so it is not in a menu ("Zoom in" in Tools asks for a point)
     add_menu_action(window, "Zoom in", controller.zoom_in_directly, QKeySequence("Ctrl++"), "Zoom in")
-    add_menu_action(window, "Cancel shape", controller.cancel_shape, QKeySequence("Escape"), "Cancel the shape being drawn")
+    add_menu_action(window, "Cancel", controller.cancel_tool, QKeySequence("Escape"), "Cancel, or stop using the current tool")
 
     color_menu = menu_bar.addMenu("&Colors")
     add_menu_action(color_menu, "Brush color", controller.select_tool_color)

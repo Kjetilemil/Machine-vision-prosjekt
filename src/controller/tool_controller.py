@@ -95,3 +95,29 @@ def run_select_text_tool(controller):
         controller.window.display_status("Text tool selected. Click on the image to add text.")
 
 
+# Esc stops a shape or move that is being dragged.
+# if nothing is being dragged it leaves the tool and the selection, like when the app has just started
+def run_cancel_tool(controller):
+        if controller.shape_start is not None:
+            controller.cancel_shape()
+            return
+
+        if controller.move_start is not None:
+            controller.move_start = None
+            controller.move_background = None
+            controller.window.display_image(convert_opencv_to_gui_image(controller.current_img))
+            controller.window.display_status("Move cancelled.")
+            return
+
+        controller.current_tool = None
+        controller.selected_mask = None
+        controller.selection_type = None
+        controller.selection_points = []
+        controller.rectangle = None
+        controller.rectangle_corners = None
+        controller.brush_last = None
+        controller.window.set_draw_mode(False)
+        controller.window.cancel_zoom_preview()
+        if controller.current_img is not None:
+            controller.window.display_image(convert_opencv_to_gui_image(controller.current_img))
+        controller.window.display_status("No tool selected.")

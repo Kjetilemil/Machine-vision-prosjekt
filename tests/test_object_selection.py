@@ -5,7 +5,7 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from processing.object_selection import remove_object
+from processing.object_selection import remove_object, place_object, shift_image
 
 
 def make_image_and_mask():
@@ -50,3 +50,44 @@ def test_remove_object_keeps_the_rest_of_the_image():
     assert result.dtype == image.dtype
     assert np.array_equal(result[:, :1300], image[:, :1300])
     assert np.array_equal(result[:, 1700:], image[:, 1700:])
+
+
+def make_square_scene():
+    # a gray background with a white square, and a mask that covers the square
+    image = np.full((100, 100, 3), 128, dtype=np.uint8)
+    image[20:50, 20:50] = 255
+    mask = np.zeros((100, 100), dtype=np.uint8)
+    mask[20:50, 20:50] = 255
+    return image, mask
+
+
+def test_shift_image_moves_the_mask():
+    _, mask = make_square_scene()
+
+    moved = shift_image(mask, (30, 10))
+
+    assert moved[40, 65] == 255  # inside the square at the new place
+    assert moved[25, 25] == 0    # the old place is empty
+
+
+def test_place_object_puts_the_object_at_the_new_place():
+    image, mask = make_square_scene()
+    background = np.full((100, 100, 3), 128, dtype=np.uint8)
+
+    result = place_object(background, image, mask, (40, 40))
+
+    assert result.shape == image.shape
+    assert result.dtype == image.dtype
+    assert np.array_equal(result[75, 75], (255, 255, 255))  # the middle of the object
+    assert np.array_equal(result[35, 35], (128, 128, 128))  # the old place is background
+    assert np.array_equal(result[5, 5], (128, 128, 128))    # the rest is not changed
+
+
+def test_place_object_can_go_partly_outside_the_image():
+    image, mask = make_square_scene()
+    background = np.full((100, 100, 3), 128, dtype=np.uint8)
+
+    result = place_object(background, image, mask, (70, 0))
+
+    assert result.shape == image.shape
+    assert np.array_equal(result[35, 97], (255, 255, 255))
