@@ -94,3 +94,43 @@ def add_texture(image, filled, mask, kernel):
     textured = np.clip(filled + noise, 0, 255).astype(np.uint8)
     result[mask > 0] = textured[mask > 0]
     return result
+
+def shift_image(image, offset):
+    """Moves an image or mask by offset (dx, dy). Parts that end up outside are lost."""
+    height, width = image.shape[:2]
+    matrix = np.float32([[1, 0, offset[0]], [0, 1, offset[1]]])
+    return cv2.warpAffine(image, matrix, (width, height))
+
+def place_object(background, image, mask, offset):
+    """Pastes the object from image onto background, moved by offset (dx, dy), with a soft edge."""
+    moved_object = shift_image(image, offset)
+    moved_mask = shift_image(mask, offset)
+
+    # the soft edge needs to be wider on big images
+    height, width = mask.shape[:2]
+    scale = max(1.0, max(height, width) / MAX_SIZE)
+    size = max(5, int(3 * scale))
+    if size % 2 == 0:  # the kernel size must be odd
+        size += 1
+
+    # big photos are slow, so we only work on a box around the object
+    x, y, w, h = cv2.boundingRect(moved_mask)
+    left = max(x - size, 0)
+    top = max(y - size, 0)
+    right = x + w + size
+    bottom = y + h + size
+
+    # shrink the mask a little before blurring it, so the soft edge does not bring old background along
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (size, size))
+    smaller_mask = cv2.erode(moved_mask[top:bottom, left:right], kernel)
+    soft_mask = cv2.GaussianBlur(smaller_mask, (0, 0), size / 3)
+
+    # alpha is 1 where we see the object and 0 where we see the background
+    alpha = cv2.merge([soft_mask, soft_mask, soft_mask]) / 255
+    new_box = moved_object[top:bottom, left:right]
+    old_box = background[top:bottom, left:right]
+    blended = alpha * new_box + (1 - alpha) * old_box
+
+    result = background.copy()
+    result[top:bottom, left:right] = np.round(blended).astype(np.uint8)
+    return result

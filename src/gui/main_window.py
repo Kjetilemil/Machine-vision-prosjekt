@@ -80,6 +80,9 @@ class MainWindow(QMainWindow):
     def start_zoom_preview(self, zoom_factor, callback):
         self.image_label.start_zoom_preview(zoom_factor, callback)
 
+    def cancel_zoom_preview(self):
+        self.image_label.cancel_zoom_preview()
+
     def set_zoom_factor(self, zoom_factor, image_x=None, image_y=None, view_x=None, view_y=None):
         self.image_label.set_zoom(zoom_factor, image_x, image_y, view_x, view_y)
 
@@ -156,6 +159,9 @@ def run_main_window():
     window.image_label.drag_started.connect(controller.start_freeform)
     window.image_label.drag_moved.connect(controller.move_freeform)
     window.image_label.drag_finished.connect(controller.finish_freeform)
+    window.image_label.drag_started.connect(controller.start_move)
+    window.image_label.drag_moved.connect(controller.preview_move)
+    window.image_label.drag_finished.connect(controller.finish_move)
     window.image_label.image_clicked.connect(controller.polygon_click)
 
     window.show()
