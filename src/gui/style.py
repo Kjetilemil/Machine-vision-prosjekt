@@ -156,6 +156,17 @@ def build_stylesheet(colors):
     """
 
 
+# the colors of the theme in use
+_current_theme = "dark"
+
+
+def current_colors():
+    return THEMES[_current_theme]
+
+
 def apply_theme(app: QApplication, theme="dark"):
+    global _current_theme
+    _current_theme = theme
+    # Fusion looks the same on Windows, Mac and Linux, so the stylesheet works everywhere
     app.setStyle("Fusion")
     app.setStyleSheet(build_stylesheet(THEMES[theme]))

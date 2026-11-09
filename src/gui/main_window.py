@@ -17,6 +17,7 @@ from controller.controller import Controller
 from gui.menubar import create_menubar
 from gui.zoomable_label import ZoomableLabel
 from gui.style import apply_theme
+from gui.menu_icons import add_menu_icons
 
 TOOL_NAMES = {
     "color_picker": "Color picker",
@@ -181,6 +182,7 @@ def run_main_window():
     window = MainWindow()
     controller = Controller(window)
     create_menubar(window, controller)
+    add_menu_icons(window.menuBar())
     window.open_button.clicked.connect(controller.open_image)
     window.image_label.image_clicked.connect(controller.handle_image_click)
     window.image_label.pinch_zoomed.connect(controller.zoom_by)
