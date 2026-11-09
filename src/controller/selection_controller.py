@@ -87,6 +87,7 @@ def _finish_selection(controller, selection_type):
     # the same mask as Select object, so remove, blur and change color work on it
     controller.selected_mask = mask
     controller.selection_type = selection_type
+    controller.rectangle = None  # the new selection replaces an old rectangle
     preview = draw_selection(controller.current_img, mask)
     controller.window.display_image(convert_opencv_to_gui_image(preview))
     pixels = int((mask > 0).sum())

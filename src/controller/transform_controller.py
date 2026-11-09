@@ -1,7 +1,7 @@
 from image.convert_image_for_gui import convert_opencv_to_gui_image
 from processing.rotate_flip import rotate_right, rotate_left, flip_horizontal, flip_vertical
 from processing.resize import resize_image 
-from processing.crop import crop
+from processing.crop import crop_to_mask
 
 
 
@@ -66,20 +66,23 @@ def run_resize_image(controller):
         gui_image = convert_opencv_to_gui_image(resized_image)
         controller.window.display_image(gui_image)
 
-# crops the image. uses the rectangle defined by the rectangle selection tool
+# crops the image to the selected area. works with every selection (rectangle, free-form, polygon, object)
 def run_crop_image(controller):
-        if controller.current_img is None or controller.rectangle is None:
-            controller.window.display_status("Select an area with the rectangle tool first.")
+        mask = controller.selected_mask
+        if controller.current_img is None or mask is None or not mask.any():
+            controller.window.display_status("Select an area first.")
+            return
+        # the image may have been rotated or resized since the area was selected
+        if mask.shape != controller.current_img.shape[:2]:
+            controller.selected_mask = None
+            controller.window.display_status("The image has changed, select the area again.")
             return
 
-        # corners from the rectangle selection tool
-        top_left, bottom_right = controller.rectangle
-        x0, y0 = top_left
-        x1, y1 = bottom_right
-
         controller.history.save(controller.current_img)
-        controller.current_img = crop(controller.current_img, x0, x1, y0, y1)
-        controller.rectangle = None  # Reset the rectangle after cropping
-        controller.selection_type = None  # Reset selection type after cropping
+        controller.current_img = crop_to_mask(controller.current_img, mask)
+        # the selection does not fit the cropped image any more
+        controller.selected_mask = None
+        controller.rectangle = None
+        controller.selection_type = None
         gui_image = convert_opencv_to_gui_image(controller.current_img)
         controller.window.display_image(gui_image)

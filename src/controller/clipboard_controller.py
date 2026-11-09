@@ -2,22 +2,19 @@ import numpy as np
 
 from image.convert_image_for_gui import convert_opencv_to_gui_image
 from processing.clipboard import (
-    rectangle_mask, copy_area, cut_area, paste_area, selection_position,
+    copy_area, cut_area, paste_area, selection_position,
     keep_piece_on_image, is_on_piece, draw_paste_frame,
 )
 
-# returns the mask of the current selection (rectangle, free-form or polygon), or None if nothing is selected
+# returns the mask of the current selection (rectangle, free-form, polygon or object), or None if nothing is selected
 def _selection_mask(controller):
-        if controller.selection_type == "rectangle":
-            top_left, bottom_right = controller.rectangle
-            return rectangle_mask(controller.current_img, top_left, bottom_right)
-
-        if controller.selection_type in ("freeform", "polygon") and controller.selected_mask is not None:
-            # the image may have been rotated or resized since the area was selected
-            if controller.selected_mask.shape == controller.current_img.shape[:2]:
-                return controller.selected_mask
-
-        return None
+        mask = controller.selected_mask
+        if mask is None or not mask.any():
+            return None
+        # the image may have been rotated or resized since the area was selected
+        if mask.shape != controller.current_img.shape[:2]:
+            return None
+        return mask
 
 # copies the selected area to the clipboard, or the entire image if nothing is selected
 def run_copy_image(controller):

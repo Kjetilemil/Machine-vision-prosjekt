@@ -3,6 +3,7 @@ from image.properties import get_image_properties, get_pixel_color
 from image.copy import copy_image
 from processing.object_selection import select_object, draw_selection
 from processing.rectangle_selection import rectangle_selection
+from processing.clipboard import rectangle_mask
 from processing.text import add_text
 from gui.popup import popup_get_integer, popup_get_color, popup_get_text
 
@@ -26,6 +27,8 @@ def run_handle_image_click(controller, x, y):
                 controller.window.display_status("Could not find an object there.")
                 return
             controller.selected_mask = mask
+            controller.selection_type = "object"
+            controller.rectangle = None  # the new selection replaces an old rectangle
             pixels = int((mask > 0).sum())
             controller.window.display_status(f"Object selected ({pixels} pixels)")
             preview = draw_selection(controller.current_img, mask)
@@ -44,6 +47,10 @@ def run_handle_image_click(controller, x, y):
             bottom_right_x = max(x1, x), max(y1, y)
             controller.rectangle = (top_left_x, bottom_right_x)
             controller.selection_type = "rectangle"
+            # every selection is also a mask, so remove, blur, move, copy and crop work the same for all of them
+            mask = rectangle_mask(controller.current_img, top_left_x, bottom_right_x)
+            # an empty rectangle (both clicks on the same line) is no selection
+            controller.selected_mask = mask if mask.any() else None
 
             #display the rectangle on the image
             rectangle_displayed = copy_image(controller.current_img)
