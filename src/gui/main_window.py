@@ -21,7 +21,7 @@ from gui.zoomable_label import ZoomableLabel
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Image editor")
+        self.setWindowTitle("Item Manipulation")
         self.resize(900, 700)
         self.setStyleSheet("""
             QMainWindow { background-color: #d3d3d3; }
