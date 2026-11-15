@@ -1,4 +1,4 @@
-# Image Segmenter
+# Item Manipulation
 
 Group 6 proudly presents their image editing application with an included image segmenter
 giving users the option to segment images using different algorithms.
