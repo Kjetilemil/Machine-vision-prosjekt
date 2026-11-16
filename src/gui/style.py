@@ -115,7 +115,63 @@ def build_stylesheet(colors):
             padding: 15px 42px;
         }}
 
-                /* the chosen tool, in the right corner of the status bar */
+                /* the row of menus at the top */
+        QWidget#categoryBar {{
+            background-color: {colors["window"]};
+            border-bottom: 1px solid {colors["border"]};
+        }}
+        QWidget#categoryBar QToolButton {{
+            background: transparent;
+            border: none;
+            border-radius: 6px;
+            padding: 6px 12px;
+        }}
+        QWidget#categoryBar QToolButton:hover {{
+            background-color: {colors["surface"]};
+        }}
+        QWidget#categoryBar QToolButton:checked {{
+            background-color: {colors["accent_soft"]};
+            color: {colors["accent"]};
+        }}
+        QWidget#categoryBar QToolButton::menu-indicator {{
+            image: none;
+        }}
+
+        /* the panel on the left with the items of the chosen menu */
+        QWidget#toolPanel {{
+            background-color: {colors["window"]};
+            border-right: 1px solid {colors["border"]};
+        }}
+        QWidget#toolPanel QScrollArea, QWidget#toolPanel QScrollArea > QWidget > QWidget {{
+            background: transparent;
+        }}
+        QLabel#panelHeading {{
+            background: transparent;
+            color: {colors["muted"]};
+            font-size: 11px;
+            padding: 10px 8px 4px 8px;
+        }}
+        QWidget#toolPanel QToolButton {{
+            background: transparent;
+            border: none;
+            border-radius: 7px;
+            color: {colors["text"]};
+            padding: 7px 10px;
+        }}
+        QWidget#toolPanel QToolButton:hover {{
+            background-color: {colors["surface"]};
+        }}
+        QWidget#toolPanel QToolButton:checked {{
+            background-color: {colors["surface"]};
+            color: {colors["accent"]};
+        }}
+        QLabel#panelShortcut {{
+            background: transparent;
+            color: {colors["muted"]};
+            font-size: 11px;
+        }}
+
+            /* the chosen tool, in the right corner of the status bar */
         QLabel#toolChip {{
             background-color: {colors["accent_soft"]};
             color: {colors["accent"]};
