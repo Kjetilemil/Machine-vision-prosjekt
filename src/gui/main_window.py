@@ -4,6 +4,8 @@ from PyQt6.QtWidgets import (
     QMainWindow,
     QMessageBox,
     QInputDialog,
+    QLabel,
+    QHBoxLayout,
     QPushButton,
     QStackedWidget,
     QVBoxLayout,
@@ -15,7 +17,24 @@ from PyQt6.QtGui import QKeySequence
 from controller.controller import Controller
 from gui.menubar import create_menubar
 from gui.zoomable_label import ZoomableLabel
+from gui.style import apply_theme
+from gui.menu_icons import add_menu_icons
+from gui.tool_panel import ToolPanel, CategoryBar
 
+TOOL_NAMES = {
+    "color_picker": "Color picker",
+    "select_object": "Select object",
+    "rectangle_selection": "Rectangle",
+    "freeform_selection": "Free-form",
+    "polygon_selection": "Polygon",
+    "text_tool": "Text",
+    "draw_shape": "Shape",
+    "paint_brush": "Paint brush",
+    "erase": "Erase",
+    "move_object": "Move object",
+    "duplicate_object": "Duplicate object",
+    "move_paste": "Place pasted image",
+}
 
 # initializes the gui
 class MainWindow(QMainWindow):
@@ -23,23 +42,21 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.setWindowTitle("Item Manipulation")
         self.resize(900, 700)
-        self.setStyleSheet("""
-            QMainWindow { background-color: #d3d3d3; }
-            QMenuBar { background-color: #666666; }
-        """)
 
-        # start screen with a big button, shown until an image is opened
         self.open_button = QPushButton("Open image")
-        self.open_button.setStyleSheet("""
-            QPushButton {
-                font-size: 18px; padding: 12px 32px; border-radius: 6px;
-                background-color: #666666; color: white;
-            }
-            QPushButton:hover { background-color: #555555; }
-        """)
+        title = QLabel("Item Manipulation")
+        title.setObjectName("title")
+        self.open_button = QPushButton("Open image")
+        self.open_button.setObjectName("openButton")
+        self.open_button.setCursor(Qt.CursorShape.PointingHandCursor)
+
         start_screen = QWidget()
         start_layout = QVBoxLayout(start_screen)
+        start_layout.addStretch()
+        start_layout.addWidget(title, alignment=Qt.AlignmentFlag.AlignCenter)
+        start_layout.addSpacing(24)
         start_layout.addWidget(self.open_button, alignment=Qt.AlignmentFlag.AlignCenter)
+        start_layout.addStretch()
 
         # creates space in the gui for the imaage
         self.image_label = ZoomableLabel(self)
@@ -49,11 +66,31 @@ class MainWindow(QMainWindow):
         self.pages = QStackedWidget()
         self.pages.addWidget(start_screen)
         self.pages.addWidget(self.image_label)
-        self.setCentralWidget(self.pages)
 
+        # the tool panel on the left and the image on the right
+        self.tool_panel = ToolPanel()
+        body = QWidget()
+        body_layout = QHBoxLayout(body)
+        body_layout.setContentsMargins(0, 0, 0, 0)
+        body_layout.setSpacing(0)
+        body_layout.addWidget(self.tool_panel)
+        body_layout.addWidget(self.pages, 1)
+
+        central = QWidget()
+        self.central_layout = QVBoxLayout(central)
+        self.central_layout.setContentsMargins(0, 0, 0, 0)
+        self.central_layout.setSpacing(0)
+        self.central_layout.addWidget(body, 1)
+        self.setCentralWidget(central)
         # the status bar is made right away, otherwise it shows up with the first message
         # and makes the image area smaller, so the image jumps
         self.statusBar()
+
+        # shows which tool is chosen, in the right corner of the status bar
+        self.tool_label = QLabel()
+        self.tool_label.setObjectName("toolChip")
+        self.tool_label.hide()
+        self.statusBar().addPermanentWidget(self.tool_label)
 
     def display_image(self, gui_ready_image):
         self.image_label.set_image(gui_ready_image)
@@ -96,6 +133,7 @@ class MainWindow(QMainWindow):
         for menu_action in self.menuBar().actions():
             actions += menu_action.menu().actions()
         actions += self.actions()  # shortcuts that are not in a menu, like zoom in
+        actions = list(dict.fromkeys(actions))  # the menu items are also on the window, so they are removed twice
 
         rows = []
         for action in actions:
@@ -126,6 +164,32 @@ class MainWindow(QMainWindow):
         box.setText(f"<table>{table}</table>")
         box.exec()
 
+        # replaces the dropdown menus with a row of menus on top and the tool panel on the left
+    def connect_tool_panel(self):
+        menu_bar = self.menuBar()
+        menus = [action.menu() for action in menu_bar.actions() if action.menu() is not None]
+
+        # the shortcuts stop working when the menu bar is hidden, so the menu items are added to the window too
+        for menu in menus:
+            for action in menu.actions():
+                if action.menu() is not None:
+                    self.addActions(action.menu().actions())
+                elif not action.isSeparator():
+                    self.addAction(action)
+
+        menu_bar.setNativeMenuBar(False)  # on Mac the menu bar would otherwise still be at the top of the screen
+        menu_bar.hide()
+        self.central_layout.insertWidget(0, CategoryBar(menus, self.tool_panel))
+
+    # shows the name of the chosen tool in the status bar, None hides it
+    def show_tool(self, tool):
+        self.tool_panel.set_active(tool)
+        if tool is None:
+            self.tool_label.hide()
+            return
+        self.tool_label.setText("●  " + TOOL_NAMES.get(tool, tool))
+        self.tool_label.show()
+
     # displays message in the status bar of the gui
     def display_status(self, text):
         self.statusBar().showMessage(text)
@@ -144,10 +208,13 @@ class MainWindow(QMainWindow):
 
 def run_main_window():
     app = QApplication(sys.argv)
+    apply_theme(app, "dark")
 
     window = MainWindow()
     controller = Controller(window)
     create_menubar(window, controller)
+    add_menu_icons(window.menuBar())
+    window.connect_tool_panel()
     window.open_button.clicked.connect(controller.open_image)
     window.image_label.image_clicked.connect(controller.handle_image_click)
     window.image_label.pinch_zoomed.connect(controller.zoom_by)
