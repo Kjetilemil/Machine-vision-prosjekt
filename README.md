@@ -12,7 +12,7 @@ Using `venv`:
 ```sh
 python -m venv venv
 source ./venv/bin/activate # Unix
-./venv/bin/Activate.ps1    # Windows
+.\venv\Scripts\Activate.ps1    # Windows
 pip install -r requirements.txt
 ```
 
